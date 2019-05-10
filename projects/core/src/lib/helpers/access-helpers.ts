@@ -59,12 +59,13 @@ export function canExpression(accessExpression: string | Array<string>, group = 
 
 function getPathObject(path: string) {
   return path.split(PATH_SEPARATOR)
-    .reduce((o, i) => {
-      if (i in o) {
-        return o[i];
+    .reduce(({ currentPath, object }, prop) => {
+      if (prop in object) {
+        return { currentPath: `${currentPath}${prop}.`, object: object[prop] };
       }
-      throw new Error(`${i} undefined inside ${path}`);
-    }, configurationAccess);
+      throw new Error(`${prop} is not defined inside ${currentPath} in your access configuration`);
+    }, { currentPath: '', object: configurationAccess })
+    .object;
 }
 
 function mergeChildrenActions(path, action) {
@@ -75,10 +76,12 @@ function mergeChildrenActions(path, action) {
 }
 
 function testAccessReducer(access, op, acc, init) {
-  return from(access as Array<AccessType>).pipe(
-    mergeMap(currentAccess => testAccess(currentAccess, op)),
-    reduce(acc, init)
-  );
+  console.log(access, op, acc, init);
+  return from(access as Array<AccessType>)
+    .pipe(
+      mergeMap(currentAccess => testAccess(currentAccess, op)),
+      reduce(acc, init)
+    );
 }
 
 function testAccess(access: AccessType | Array<AccessType>, op = Operator.OR): Observable<boolean> {

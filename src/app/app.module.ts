@@ -2,7 +2,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { AccessGuard, CoreModule, AccessStrategy } from 'core';
+import { AccessGuard, AccessModule, AccessStrategy } from 'core';
 import { AppComponent } from './app.component';
 import { MainComponent } from './main/main.component';
 import { MyAccessStrategy } from './my-access-strategy.service';
@@ -14,19 +14,22 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
       AppComponent, ProfileComponent, MainComponent, UnauthorizedComponent
    ],
    imports: [
-      CoreModule.forRoot({
+      AccessModule.forRoot({
          accesses: {
-            Hello: {
-               View: {
-                  read: 'CannotAccess'
+            User: {
+               Hello: {
+                  View: {
+                     read: 'CanAccess'
+                  }
                }
             }
          },
+         redirect: '/forbidden',
          strategy: { provide: AccessStrategy, useClass: MyAccessStrategy }
       }),
       RouterModule.forRoot([
          { path: '', component: MainComponent },
-         { path: 'unauthorized', component: UnauthorizedComponent },
+         { path: 'forbidden', component: UnauthorizedComponent },
          {
             path: 'profile',
             component: ProfileComponent,
