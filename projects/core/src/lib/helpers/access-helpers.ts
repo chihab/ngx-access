@@ -1,16 +1,14 @@
 import { of, from, Observable } from 'rxjs';
 import { map, reduce, mergeMap } from 'rxjs/operators';
 
-export type AccessName = string;
-
-export type HasAccessStrategy = (accessName: AccessName) => Observable<boolean>;
+export type HasAccessStrategy = (accessName: string) => Observable<boolean>;
 
 interface Access {
   operator: Operator;
-  list: Array<AccessName>;
+  list: Array<string>;
 }
 
-type AccessType = AccessName | Access;
+type AccessType = string | Access;
 
 enum Operator {
   AND = 'AND',
@@ -76,7 +74,6 @@ function mergeChildrenActions(path, action) {
 }
 
 function testAccessReducer(access, op, acc, init) {
-  console.log(access, op, acc, init);
   return from(access as Array<AccessType>)
     .pipe(
       mergeMap(currentAccess => testAccess(currentAccess, op)),
