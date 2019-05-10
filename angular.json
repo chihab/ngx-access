@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "sample-app": {
+    "ngx-access": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/sample-app",
+            "outputPath": "dist/ngx-access",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -58,18 +58,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "sample-app:build"
+            "browserTarget": "ngx-access:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "sample-app:build:production"
+              "browserTarget": "ngx-access:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "sample-app:build"
+            "browserTarget": "ngx-access:build"
           }
         },
         "test": {
@@ -103,7 +103,7 @@
         }
       }
     },
-    "sample-app-e2e": {
+    "ngx-access-e2e": {
       "root": "e2e/",
       "projectType": "application",
       "prefix": "",
@@ -112,11 +112,11 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "sample-app:serve"
+            "devServerTarget": "ngx-access:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "sample-app:serve:production"
+              "devServerTarget": "ngx-access:serve:production"
             }
           }
         },
@@ -135,7 +135,7 @@
       "root": "projects/core",
       "sourceRoot": "projects/core/src",
       "projectType": "library",
-      "prefix": "lib",
+      "prefix": "ngx",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",
@@ -167,5 +167,5 @@
       }
     }
   },
-  "defaultProject": "sample-app"
+  "defaultProject": "ngx-access"
 }

@@ -1,7 +1,7 @@
 import { Directive } from '@angular/core';
 
 @Directive({
-  selector: '[libHasAccess]'
+  selector: '[ngxHasAccess]'
 })
 export class HasAccessDirective {
 
