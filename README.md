@@ -1,27 +1,108 @@
-# SampleApp
+## Usage in templates
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.0.
+### Check if user has access
 
-## Development server
+```
+<button *appHasAccess="'Path.To.Config:action'">
+    <span>Modifier</span>
+</button>
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+```
 
-## Code scaffolding
+`Path.To.Config:action` is the path to access configuration (see below)
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+### Else statement
 
-## Build
+```
+<ng-template [appHasAccess]="'Path.To.Config:action'; else anotherBlock">
+  <span>Modifier</span>
+</ng-template>
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+<ng-template #anotherBlock>
+  <span>Autre message</span>
+</ng-template>
 
-## Running unit tests
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+### Group indicator
 
-## Running end-to-end tests
+```
+<button *appHasAccess="'Path.To.Config:action; group = true'">
+    <span>Modifier</span>
+</button>
+```
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+**group**: whether parent access depends on children accesses. Default is false.
 
-## Further help
+## Usage in code
+```
+  import { AccessHelper } from '../../auth/helpers';
+  
+  ...
+  hasMetaDataWriteAccess() {
+    return AccessHelper.can('Path.To.Configuration', 'action');
+  }
+  
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+## Configuration
+
+**application.json**
+
+```
+{
+  "permissions": {
+    "Path": {
+      "To" : {
+        "View1" : [
+          "Access1", "Access1bis"
+        ],
+        "View2" : "Access2",
+        "View3" : {
+          "operator": false,
+          "list": ["Access3", "Access4"]
+        }
+     }
+  }
+}
+``` 
+
+| type  |  description | evaluation  |
+|---|---|---|
+|  string |  "Access1" |  true if user  has Access1 |
+|  object |  {operator: "AND", list: \["Access1", "Access2"]} |  true if user has Access1 **AND** Access2. Possible values for operator: AND, OR |
+|  array |  \["Access1", \["Access1", "Access2"]]  |  true if user has Access1 **OR** (Access2 **OR** Access3) |
+
+
+### Combination of types
+
+```
+{
+  "permissions": {
+    "Path": {
+      "To" : {
+        combination: {
+          operator: 'OR',
+          list: [
+            {operator: 'OR', list: ['Access1', 'Access2']},
+            {
+              operator: 'OR', list: [
+                'Access3',
+                'Access4',
+                {operator: 'AND', list: ['Access5', 'Access6']},
+              ]
+            },
+          ]
+        }
+      }
+    }
+  }
+}
+``` 
+
+`AccessHelper.can('Path.To', 'combination')` would be true if user has 
+ - (Access1 **OR** Access2)
+ - **OR** Access3 
+ - **OR** Access4) 
+ - **OR** (Access5 **AND** Access6)
+
