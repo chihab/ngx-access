@@ -2,7 +2,8 @@
  * Public API Surface of core
  */
 
-export * from './lib/core.service';
-export * from './lib/core.component';
-export * from './lib/has-access/has-access.directive';
+export * from './lib/directives';
+export * from './lib/helpers';
+export * from './lib/services';
 export * from './lib/core.module';
+export * from './lib/config';
