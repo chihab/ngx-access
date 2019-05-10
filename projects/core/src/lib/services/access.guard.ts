@@ -1,26 +1,22 @@
-import { AccessService } from './access.service';
-import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot } from '@angular/router';
+import { ACCESS_CONFIG } from './../config';
+import { Injectable, Inject } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivate, Router } from '@angular/router';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { AccessService } from './access.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AccessGuard implements CanActivate {
 
-  constructor(private router: Router,
-              private accessService: AccessService) {
+  constructor(private router: Router, private accessService: AccessService, @Inject(ACCESS_CONFIG) private config) {
   }
-
   canActivate(
-    next: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
-
-    if (this.accessService.canExpression(next.data.expectedAccess)) {
-      return true;
-    }
-
-    // this.router.navigate(['/not-authorized']);
-    return false;
+    next: ActivatedRouteSnapshot): Observable<boolean> {
+    return this.accessService.canExpression(next.data.expression)
+      .pipe(
+        tap(hasAccess => !hasAccess && this.router.navigate([next.data.redirect || this.config.redirect]))
+      );
   }
 }
