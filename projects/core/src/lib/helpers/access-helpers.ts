@@ -66,7 +66,7 @@ function getPathObject(path: string) {
         return {currentPath: `${currentPath}${prop}.`, object: object[prop]};
       }
       throw new Error(`${prop} is not defined inside ${currentPath} in your access configuration`);
-    }, {currentPath: '', object: configurationAccess})
+    }, {currentPath: 'ROOT', object: configurationAccess})
     .object;
 }
 

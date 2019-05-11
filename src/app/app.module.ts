@@ -30,6 +30,7 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
       RouterModule.forRoot([
          { path: '', component: MainComponent },
          { path: 'forbidden', component: UnauthorizedComponent },
+         { path: 'lazy', loadChildren: './lazy/lazy.module#LazyModule' },
          {
             path: 'profile',
             component: ProfileComponent,
