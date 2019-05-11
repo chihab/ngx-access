@@ -1,5 +1,5 @@
-import { of, from, Observable } from 'rxjs';
-import { tap, map, reduce, mergeMap } from 'rxjs/operators';
+import { from, Observable, of } from 'rxjs';
+import { map, mergeMap, reduce } from 'rxjs/operators';
 
 export type HasAccessStrategy = (accessName: string) => Observable<boolean>;
 
@@ -39,7 +39,8 @@ export function can(path: string, action: string, group = false): Observable<boo
     if (!!access) {
       return testAccess(access);
     }
-    throw new Error(`Undefined action ${action} inside ${path}`);
+    console.error(`Undefined action ${action} inside ${path}`);
+    return of(false);
   } catch (e) {
     console.error(e);
     return of(false);
@@ -60,12 +61,12 @@ export function canExpression(accessExpression: string | Array<string>, group = 
 
 function getPathObject(path: string) {
   return path.split(PATH_SEPARATOR)
-    .reduce(({ currentPath, object }, prop) => {
+    .reduce(({currentPath, object}, prop) => {
       if (prop in object) {
-        return { currentPath: `${currentPath}${prop}.`, object: object[prop] };
+        return {currentPath: `${currentPath}${prop}.`, object: object[prop]};
       }
       throw new Error(`${prop} is not defined inside ${currentPath} in your access configuration`);
-    }, { currentPath: '', object: configurationAccess })
+    }, {currentPath: '', object: configurationAccess})
     .object;
 }
 

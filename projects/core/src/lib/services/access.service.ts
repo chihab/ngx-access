@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { can, canExpression, setConfigurationAccess, setHasAccessStrategy } from '../helpers/access-helpers';
-import { ACCESS_CONFIG } from './../config';
 import { AccessStrategy } from './access-strategy.service';
+import { ACCESS_CONFIG } from '../config';
+import { can, canExpression, setConfigurationAccess, setHasAccessStrategy } from '../helpers';
 
 @Injectable({
   providedIn: 'root'

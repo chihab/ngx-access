@@ -1,4 +1,4 @@
-import { setHasAccessStrategy, setConfigurationAccess, can, canExpression } from './access-helpers';
+import { canExpression, setConfigurationAccess, setHasAccessStrategy } from './access-helpers';
 import { of } from 'rxjs';
 
 describe('AccessHelpers', () => {
@@ -18,7 +18,7 @@ describe('AccessHelpers', () => {
       });
   });
 
-  it('should prevent access when access configuration has been initialized with empty obkect', (done: DoneFn) => {
+  it('should prevent access when access configuration has been initialized with empty object', (done: DoneFn) => {
     setConfigurationAccess({});
     canExpression('Resource.View')
       .subscribe(value => {
@@ -48,7 +48,7 @@ describe('AccessHelpers', () => {
         array: ['Access1', 'Access2'],
         complex: [
           ['Access1', 'Access2'],
-          { operator: 'OR', list: ['Access3', 'Access4'] },
+          {operator: 'OR', list: ['Access3', 'Access4']},
           'Access5'
         ]
       }
@@ -67,7 +67,7 @@ describe('AccessHelpers', () => {
         array: ['Access1', 'Access2'],
         complex: [
           ['Access1', 'Access2'],
-          { operator: 'OR', list: ['Access3', 'Access4'] },
+          {operator: 'OR', list: ['Access3', 'Access4']},
           'Access5'
         ]
       }
@@ -86,7 +86,7 @@ describe('AccessHelpers', () => {
         array: ['Access1', 'Access2'],
         complex: [
           ['Access1', 'Access2'],
-          { operator: 'OR', list: ['Access3', 'Access4'] },
+          {operator: 'OR', list: ['Access3', 'Access4']},
           'Access5'
         ]
       }
@@ -107,7 +107,7 @@ describe('AccessHelpers', () => {
         array: ['Access1', 'Access2'],
         complex: [
           ['Access1', 'Access2'],
-          { operator: 'OR', list: ['Access3', 'Access4'] },
+          {operator: 'OR', list: ['Access3', 'Access4']},
           'Access5'
         ]
       }
@@ -129,12 +129,12 @@ describe('AccessHelpers', () => {
         combination: {
           operator: 'OR',
           list: [
-            { operator: 'OR', list: ['Access1', 'Access2'] },
+            {operator: 'OR', list: ['Access1', 'Access2']},
             {
               operator: 'OR', list: [
                 'Access3',
                 'Access4',
-                { operator: 'AND', list: ['Access5', 'Access6'] },
+                {operator: 'AND', list: ['Access5', 'Access6']},
               ]
             },
           ]
@@ -162,7 +162,7 @@ describe('AccessHelpers', () => {
       .subscribe(value => {
         expect(value).toBe(true);
         expect(hasAccessStrategy).toHaveBeenCalledWith('Access1');
-        // Better not to call thoses
+        // Better not to call these
         expect(hasAccessStrategy).toHaveBeenCalledWith('Access2');
         expect(hasAccessStrategy).toHaveBeenCalledWith('Access3');
         expect(hasAccessStrategy).toHaveBeenCalledWith('Access4');

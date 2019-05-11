@@ -1,10 +1,9 @@
-import { of, Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { AccessModule } from '../../public-api';
 import { AccessStrategy } from '../services';
-import { HasAccessDirective } from './has-access.directive';
 
 @Component({
   selector: 'ngx-has-access-test',
@@ -30,7 +29,7 @@ describe('HasAccess Directive', () => {
             }
           },
           redirect: '/forbidden',
-          strategy: { provide: AccessStrategy, useClass: MyAccessStrategy }
+          strategy: {provide: AccessStrategy, useClass: MyAccessStrategy}
         }),
       ],
       declarations: [TestComponent]

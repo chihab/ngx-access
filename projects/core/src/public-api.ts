@@ -1,7 +1,7 @@
 import { ACCESS_CONFIG } from './lib/config';
 import { ModuleWithProviders, NgModule, Provider } from '@angular/core';
-import { HasAccessDirective } from './lib/directives/has-access.directive';
-import { AccessStrategy, FakeAccessStrategy } from './lib/services/access-strategy.service';
+import { AccessStrategy, FakeAccessStrategy } from './lib/services';
+import { HasAccessDirective } from './lib/directives';
 
 export * from './lib/directives';
 export * from './lib/helpers';
