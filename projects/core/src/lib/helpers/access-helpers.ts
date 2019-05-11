@@ -1,5 +1,5 @@
 import { of, from, Observable } from 'rxjs';
-import { map, reduce, mergeMap } from 'rxjs/operators';
+import { tap, map, reduce, mergeMap } from 'rxjs/operators';
 
 export type HasAccessStrategy = (accessName: string) => Observable<boolean>;
 
@@ -19,7 +19,7 @@ const DEFAULT_ACTION = 'read';
 const PATH_SEPARATOR = '.';
 const ACCESS_SEPARATOR = ':';
 
-let configurationAccess = null;
+let configurationAccess = {};
 let hasAccessStrategy: HasAccessStrategy;
 
 export function setConfigurationAccess(config) {
@@ -36,7 +36,10 @@ export function can(path: string, action: string, group = false): Observable<boo
     const access = group
       ? mergeChildrenActions(pathObject, action)
       : pathObject[action];
-    return testAccess(access);
+    if (!!access) {
+      return testAccess(access);
+    }
+    throw new Error(`Undefined action ${action} inside ${path}`);
   } catch (e) {
     console.error(e);
     return of(false);
@@ -73,11 +76,16 @@ function mergeChildrenActions(path, action) {
     .reduce((all, one) => [...all, one], []);
 }
 
-function testAccessReducer(access, op, acc, init) {
+function testAccessReducer(
+  access: Array<AccessType>,
+  op: Operator,
+  predicate: (a: boolean, v: boolean) => boolean,
+  init: boolean
+) {
   return from(access as Array<AccessType>)
     .pipe(
       mergeMap(currentAccess => testAccess(currentAccess, op)),
-      reduce(acc, init)
+      reduce(predicate, init)
     );
 }
 
