@@ -16,11 +16,12 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
    imports: [
       AccessModule.forRoot({
          accesses: {
-            User: {
-               Hello: {
-                  View: {
-                     read: 'CanAccess'
-                  }
+            UserForm: {
+               FirstName: {
+                  Read: 'CanEditUserName'
+               },
+               LastName: {
+                  Read: 'CanEditLastName'
                }
             }
          },

@@ -24,6 +24,7 @@ let hasAccessStrategy: HasAccessStrategy;
 
 export function setConfigurationAccess(config) {
   configurationAccess = config;
+  console.log(configurationAccess)
 }
 
 export function setHasAccessStrategy(accessTest: HasAccessStrategy) {

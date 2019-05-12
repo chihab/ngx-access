@@ -3,18 +3,18 @@
 ### Check if user has access
 
 ```
-<button *appHasAccess="'Path.To.Config:action'">
+<button *ngxCan="'Path.To.Config.Action'">
     <span>Modifier</span>
 </button>
 
 ```
 
-`Path.To.Config:action` is the path to access configuration (see below)
+`Path.To.Config.Action` is the path to access configuration (see below)
 
 ### Else statement
 
 ```
-<ng-template [appHasAccess]="'Path.To.Config:action'; else anotherBlock">
+<ng-template [ngxCan]="'Path.To.Config:action'; else anotherBlock">
   <span>Modifier</span>
 </ng-template>
 
@@ -27,7 +27,7 @@
 ### Group indicator
 
 ```
-<button *appHasAccess="'Path.To.Config:action; group = true'">
+<button *ngxCan="'UserForm.Read'">
     <span>Modifier</span>
 </button>
 ```
@@ -47,7 +47,7 @@
 
 ## Configuration
 
-**application.json**
+**ngxlication.json**
 
 ```
 {
