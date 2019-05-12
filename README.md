@@ -3,7 +3,7 @@
 ### Check if user has access
 
 ```
-<button *ngxCan="'Path.To.Config.Action'">
+<button *ngxHasAccess="'Path.To.Config.Action'">
     <span>Modifier</span>
 </button>
 
@@ -14,7 +14,7 @@
 ### Else statement
 
 ```
-<ng-template [ngxCan]="'Path.To.Config:action'; else anotherBlock">
+<ng-template [ngxHasAccess]="'Path.To.Config:action'; else anotherBlock">
   <span>Modifier</span>
 </ng-template>
 
@@ -27,7 +27,7 @@
 ### Group indicator
 
 ```
-<button *ngxCan="'UserForm.Read'">
+<button *ngxHasAccess="'UserForm.Read'">
     <span>Modifier</span>
 </button>
 ```
