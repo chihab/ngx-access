@@ -18,10 +18,10 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
          accesses: {
             UserForm: {
                FirstName: {
-                  Read: 'CanEditUserName'
+                  Read: 'UserAccess'
                },
-               LastName: {
-                  Read: 'CanEditLastName'
+               Login: {
+                  Read: 'Adminccess'
                }
             }
          },

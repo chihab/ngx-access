@@ -7,6 +7,6 @@ import { AccessStrategy } from 'core';
 export class MyAccessStrategy implements AccessStrategy {
   constructor(private http: HttpClient) { }
   has(access: string): Observable<boolean> {
-    return of('CanAccess' === access);
+    return of('UserAccess' === access);
   }
 }

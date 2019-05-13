@@ -40,20 +40,6 @@ describe('AccessHelpers', () => {
     });
   });
 
-  // fit('should combine list, objects and string access configuration', (done: DoneFn) => {
-  //   setConfigurationAccess({
-  //     Resource: {
-  //       read: ['SomeRandomAccess']
-  //     }
-  //   });
-  //   hasAccessStrategy.and.returnValue(of(true));
-  //   canExpression('Resource.reads')
-  //     .subscribe(value => {
-  //       expect(value).toBe(false);
-  //       done();
-  //     });
-  // });
-
   it('should call access strategy with expected access', (done: DoneFn) => {
     setConfigurationAccess({
       Resource: {
@@ -65,7 +51,7 @@ describe('AccessHelpers', () => {
         SubResource2: {
           Read: [
             ['Access1', 'Access2'],
-            // { operator: 'OR', list: ['Access3', 'Access4'] },
+            ['Access3 AND Access4'],
             'Access5'
           ]
         }
@@ -78,7 +64,7 @@ describe('AccessHelpers', () => {
     });
   });
 
-  it('should call access strategy with expected access 2', (done: DoneFn) => {
+  it('should call access strategy with simple string access', (done: DoneFn) => {
     setConfigurationAccess({
       Resource: {
         read: ['ReadAccess'],
@@ -86,7 +72,6 @@ describe('AccessHelpers', () => {
         array: ['Access1', 'Access2'],
         complex: [
           ['Access1', 'Access2'],
-          // { operator: 'OR', list: ['Access3', 'Access4'] },
           'Access5'
         ]
       }
@@ -97,7 +82,7 @@ describe('AccessHelpers', () => {
     });
   });
 
-  it('should call access strategy with expected inputs 3', (done: DoneFn) => {
+  it('should call access strategy with array access', (done: DoneFn) => {
     setConfigurationAccess({
       Resource: {
         read: ['ReadAccess'],
@@ -105,7 +90,6 @@ describe('AccessHelpers', () => {
         array: ['Access1', 'Access2'],
         complex: [
           ['Access1', 'Access2'],
-          // { operator: 'OR', list: ['Access3', 'Access4'] },
           'Access5'
         ]
       }
@@ -118,7 +102,7 @@ describe('AccessHelpers', () => {
     });
   });
 
-  it('should call access strategy with expected inputs 4', (done: DoneFn) => {
+  it('should call access strategy with expected combined array access', (done: DoneFn) => {
     setConfigurationAccess({
       Resource: {
         read: ['ReadAccess'],
@@ -126,7 +110,6 @@ describe('AccessHelpers', () => {
         array: ['Access1', 'Access2'],
         complex: [
           ['Access1', 'Access2'],
-          // { operator: 'OR', list: ['Access3', 'Access4'] },
           'Access5'
         ]
       }
@@ -135,84 +118,19 @@ describe('AccessHelpers', () => {
       expect(hasAccessStrategy).not.toHaveBeenCalledWith('OtherAccess');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access1');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access2');
-      // expect(hasAccessStrategy).toHaveBeenCalledWith('Access3');
-      // expect(hasAccessStrategy).toHaveBeenCalledWith('Access4');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access5');
       done();
     });
   });
 
-  xit('should combine list, objects and string access configuration', (done: DoneFn) => {
-    setConfigurationAccess({
-      Resource: {
-        combination: {
-          // operator: 'OR',
-          // list: [
-          //   { operator: 'OR', list: ['Access1', 'Access2'] },
-          //   {
-          //     operator: 'OR', list: [
-          //       'Access3',
-          //       'Access4',
-          //       { operator: 'AND', list: ['Access5', 'Access6'] },
-          //     ]
-          //   },
-          // ]
-        }
-      }
-    });
-    hasAccessStrategy.and.returnValue(of(false));
-    canExpression('Resource.combination')
-      .subscribe(value => {
-        expect(value).toBe(false);
-        expect(hasAccessStrategy).not.toHaveBeenCalledWith('OtherAccess');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Access1');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Access2');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Access3');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Access4');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Access5');
-        // Better not to call this one
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Access6');
-        done();
-      });
-
-    hasAccessStrategy.calls.reset();
-    hasAccessStrategy.and.returnValue(of(true));
-    canExpression('Resource.combination')
-      .subscribe(value => {
-        expect(value).toBe(true);
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Access1');
-        // Better not to call these
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Access2');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Access3');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Access4');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Access5');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Access6');
-        done();
-      });
-  });
-
-  it('should combine list, objects and string access configuration', (done: DoneFn) => {
-    setConfigurationAccess({
-      Resource: {
-        read: ['SomeRandomAccess']
-      }
-    });
-    hasAccessStrategy.and.returnValue(of(true));
-    canExpression('Resource.read')
-      .subscribe(value => {
-        expect(value).toBe(true);
-        done();
-      });
-  });
-
   it('should prevent access when access path does not exist', (done: DoneFn) => {
     setConfigurationAccess({
       Resource: {
-        read: ['SomeRandomAccess']
+        Read: ['SomeRandomAccess']
       }
     });
     hasAccessStrategy.and.returnValue(of(true));
-    canExpression('Resource.create')
+    canExpression('Resource.Create')
       .subscribe(value => {
         expect(value).toBe(false);
         expect(hasAccessStrategy).not.toHaveBeenCalledWith();
@@ -220,7 +138,7 @@ describe('AccessHelpers', () => {
       });
   });
 
-  it('should aggregate children access when group flag has been set', (done: DoneFn) => {
+  it('should aggregate children access', (done: DoneFn) => {
     setConfigurationAccess({
       View: {
         Resource1: {
@@ -245,6 +163,8 @@ describe('AccessHelpers', () => {
         expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource1Access');
         expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource2Access');
         expect(hasAccessStrategy).toHaveBeenCalledWith('ReadSubResource3ccess');
+        expect(hasAccessStrategy).not.toHaveBeenCalledWith('UpdateResource2Access');
+        expect(hasAccessStrategy).not.toHaveBeenCalledWith('UpdateResource3Access');
         done();
       });
   });

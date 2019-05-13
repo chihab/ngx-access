@@ -20,39 +20,16 @@ const PATH_SEPARATOR = '.';
 let configurationAccess = {};
 let hasAccessStrategy: HasAccessStrategy;
 
-const v = {
-  View: {
-    Resource1: {
-      Read: 'ReadResource1Access'
-    },
-    Resource2: {
-      Read: 'ReadResource2Access',
-      Update: 'UpdateResource2Access',
-      Logic: '(Access1 OR Access2) OR (Access3 AND Access4)) AND Access6)'
-    }
-  }
-};
-
-const r = {
-  'View.Read': ['ReadResource1Access', 'ReadResource2Access'],
-  'View.Update': ['UpdateResource2Access'],
-  'View.Logic': {
-    __type__: 'expression',
-    value: [
-      ['Access1', 'Access2'],
-      { operator: 'OR', list: ['Access3', 'Access4'] },
-      'Access5'
-    ]
-  },
-  'View.Resource1.Read': ['ReadResource1Access'],
-  'View.Resource2.Read': ['ReadResource2Access'],
-  'View.Resource2.Update': ['UpdateResource2Access'],
-  'View.Resource2.Logic': ['UpdateResource2Access']
-};
-
 export function setConfigurationAccess(config) {
   configurationAccess = config;
   const newConfig = {};
+
+  function setConfig(path, value) {
+    if (!newConfig[path]) {
+      newConfig[path] = new Set();
+    }
+    newConfig[path].add(value);
+  }
 
   function getPath(path, prop) {
     return path
@@ -60,29 +37,28 @@ export function setConfigurationAccess(config) {
       : prop;
   }
 
-  function children(obj, path) {
+  function parse(expression) {
+    return {
+      list: expression.split(' && '),
+      operator: Operator.AND
+    };
+  }
+
+  function children(obj, path = '') {
     let accesses = [];
     function visitor(prop, value) {
-      if (typeof value === 'string') {
-        const pathKey = getPath(path, prop);
-        if (!newConfig[pathKey]) {
-          newConfig[pathKey] = new Set();
-        }
-        newConfig[pathKey].add(value);
-        accesses = accesses.concat({ action: value, prop });
-      } else if (Array.isArray(value)) {
+      if (Array.isArray(value)) {
         value.forEach(access => {
           visitor(prop, access);
         });
-      } else {
-        const childrenAccesss = children(value, getPath(path, prop));
-        accesses = accesses.concat(childrenAccesss);
+      } else if (typeof value === 'string') {
+        const expression = parse(value);
+        setConfig(getPath(path, prop), expression);
+        accesses = accesses.concat({ action: expression, prop });
+      } else if (typeof value === 'object') {
+        accesses = accesses.concat(children(value, getPath(path, prop)));
         accesses.forEach(access => {
-          const pathKey = getPath(path, access.prop);
-          if (!newConfig[pathKey]) {
-            newConfig[pathKey] = new Set();
-          }
-          newConfig[pathKey].add(access.action);
+          setConfig(getPath(path, access.prop), access.action);
         });
       }
     }
@@ -92,7 +68,7 @@ export function setConfigurationAccess(config) {
       });
     return accesses;
   }
-  children(configurationAccess, '');
+  children(configurationAccess);
   configurationAccess = newConfig;
   console.log(configurationAccess);
 }
@@ -102,16 +78,13 @@ export function setHasAccessStrategy(accessTest: HasAccessStrategy) {
 }
 
 export function can(path: string): Observable<boolean> {
-  console.log(path);
   try {
     // const pathObject = getPathObject(path);
     // const access = group
     //   ? mergeChildrenActions(pathObject, action)
     //   : pathObject[action];
     const access = configurationAccess[path];
-    console.log(path, access);
     if (!!access) {
-      console.log(access);
       return testAccess(Array.from(access));
     }
     console.error(`Undefined ${path}`);
@@ -128,11 +101,6 @@ export function canExpression(accessExpression: string | Array<string>, group = 
     : [accessExpression];
   return from(access)
     .pipe(
-      // map(a => {
-      //   const arr = a.split(PATH_SEPARATOR);
-      //   const action = arr.pop();
-      //   return { path: arr.join('.'), action };
-      // }),
       mergeMap(a => can(a)),
       reduce((acc, value) => acc || value, false)
     );
@@ -161,7 +129,7 @@ function testAccessReducer(
   op: Operator,
   predicate: (a: boolean, v: boolean) => boolean,
   init: boolean
-) {
+): Observable<boolean> {
   return from(access as Array<AccessType>)
     .pipe(
       mergeMap(currentAccess => testAccess(currentAccess, op)),

@@ -14,12 +14,8 @@ export class AccessService {
     setConfigurationAccess(config.accesses || {});
   }
 
-  can(path: string, action: string, group = false): Observable<boolean> {
-    return can(path, action, group);
-  }
-
-  canExpression(accessExpression: string | Array<string>, group = false): Observable<boolean> {
-    return canExpression(accessExpression, group);
+  can(accessExpression: string | Array<string>): Observable<boolean> {
+    return canExpression(accessExpression);
   }
 
 }

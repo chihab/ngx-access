@@ -6,15 +6,14 @@ import { AccessService } from '../services';
 })
 export class HasAccessDirective implements OnInit {
 
-  @Input() ngxHasAccessElse: TemplateRef<any>;
-  @Input() ngxHasAccessGroup = false;
   @Input() ngxHasAccess: string | Array<string>;
+  @Input() ngxHasAccessElse: TemplateRef<any>;
 
   constructor(private template: TemplateRef<any>, private viewContainer: ViewContainerRef, private accessService: AccessService) {
   }
 
   ngOnInit() {
-    this.accessService.canExpression(this.ngxHasAccess, this.ngxHasAccessGroup)
+    this.accessService.can(this.ngxHasAccess)
       .subscribe(
         access => access
           ? this.viewContainer.createEmbeddedView(this.template)
