@@ -53,7 +53,7 @@ describe('HasAccess Directive', () => {
   });
 
   it('should create element when access configured and allowed', () => {
-    TestBed.overrideTemplate(TestComponent, `<div *ngxHasAccess="'Resource:create'"></div>`);
+    TestBed.overrideTemplate(TestComponent, `<div *ngxHasAccess="'Resource.create'"></div>`);
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
     fixture.detectChanges();
     const de = fixture.debugElement.query(By.css('div'));
@@ -63,7 +63,7 @@ describe('HasAccess Directive', () => {
   it('should create component from else template when access not given', () => {
     TestBed.overrideTemplate(TestComponent, `
         <ng-template #noAccess><span>No Access</span></ng-template>
-        <div *ngxHasAccess="'Resource:read', else: noAccess"></div>
+        <div *ngxHasAccess="'Resource.read', else: noAccess"></div>
     `);
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
     fixture.detectChanges();
