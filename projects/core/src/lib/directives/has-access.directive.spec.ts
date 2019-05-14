@@ -6,15 +6,22 @@ import { AccessModule } from '../../public-api';
 import { AccessStrategy } from '../services';
 
 @Component({
-  selector: 'ngx-has-access-test',
+  selector: 'ngx-has-access-cmp',
   template: ``
 })
 class TestComponent {
 }
 
+@Component({
+  selector: 'ngx-has-access-sub-cmp',
+  template: ``
+})
+class SubComponent {
+}
+
 export class MyAccessStrategy implements AccessStrategy {
   has(access: string): Observable<boolean> {
-    return of('CanAccess' === access);
+    return of(true);
   }
 }
 
@@ -25,14 +32,19 @@ describe('HasAccess Directive', () => {
         AccessModule.forRoot({
           accesses: {
             Resource: {
-              create: 'CanAccess'
+              Child1: {
+                create: 'CanAccess'
+              },
+              Child2: {
+                create: 'CanAccess'
+              }
             }
           },
           redirect: '/forbidden',
           strategy: {provide: AccessStrategy, useClass: MyAccessStrategy}
         }),
       ],
-      declarations: [TestComponent]
+      declarations: [TestComponent, SubComponent]
     });
   });
 
@@ -69,6 +81,25 @@ describe('HasAccess Directive', () => {
     fixture.detectChanges();
     expect(fixture.debugElement.query(By.css('div'))).toBeNull();
     expect(fixture.debugElement.query(By.css('span'))).not.toBeNull();
+  });
+
+  it('should deduce path from parent component directive', () => {
+    TestBed.overrideTemplate(TestComponent, `
+      <h2> Parent Component </h2>
+      <div id="parent" ngxAccessPath="Resource">
+        <ng-container *ngxHasAccess="'$.create'">
+          <div id="child1" *ngxHasAccess="'$.Child1.create'"> Child 1 </div>
+          <div id="child2" *ngxHasAccess="'$.Child2.create'"> Child 2 </div>
+          <div id="child3" *ngxHasAccess="'$.Child3.create'"> Child 3 </div>
+        </ng-container>
+      </div>
+    `);
+    const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.css('div#parent'))).toBeTruthy()
+    expect(fixture.debugElement.query(By.css('div#child1'))).toBeTruthy()
+    expect(fixture.debugElement.query(By.css('div#child2'))).toBeTruthy()
+    expect(fixture.debugElement.query(By.css('div#child3'))).toBeFalsy()
   });
 
 });

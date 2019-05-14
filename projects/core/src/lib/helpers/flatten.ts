@@ -1,4 +1,4 @@
-function flatten(config, { parse = v => v, group = false, delimiter = '.' } = {}) {
+export function flatten(config, { parse = v => v, group = false, delimiter = '.' } = {}) {
   const flatConfig = {};
 
   function setConfig(path, value) {
@@ -45,5 +45,3 @@ function flatten(config, { parse = v => v, group = false, delimiter = '.' } = {}
   children(config);
   return flatConfig;
 }
-
-module.exports = { flatten };
