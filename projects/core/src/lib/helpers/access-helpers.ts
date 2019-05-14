@@ -1,5 +1,6 @@
 import { from, Observable, of } from 'rxjs';
 import { map, mergeMap, reduce } from 'rxjs/operators';
+import { flatten } from './flatten';
 
 export type HasAccessStrategy = (accessName: string) => Observable<boolean>;
 
@@ -15,32 +16,50 @@ enum Operator {
   OR = 'OR'
 }
 
-const DEFAULT_ACTION = 'read';
-const PATH_SEPARATOR = '.';
-const ACCESS_SEPARATOR = ':';
-
 let configurationAccess = {};
-let hasAccessStrategy: HasAccessStrategy;
+let hasAccessStrategy: HasAccessStrategy = () => of(false);
 
 export function setConfigurationAccess(config) {
-  configurationAccess = config;
-  console.log(configurationAccess)
+  function parse(expression: string) {
+    return {
+      list: expression.split(' && '),
+      operator: Operator.AND
+    };
+  }
+  configurationAccess = flatten(config, { parse, group: true });
 }
 
 export function setHasAccessStrategy(accessTest: HasAccessStrategy) {
   hasAccessStrategy = accessTest;
 }
 
-export function can(path: string, action: string, group = false): Observable<boolean> {
+export function parse(expression) {
+  const arr = expression.split(':');
+  return {
+    path: (arr[0] || '').replace(' ', ''),
+    action: (arr[1] || '').replace(' ', '')
+  };
+}
+
+export function canExpression(accessExpression: string | Array<string>): Observable<boolean> {
+  const access = Array.isArray(accessExpression)
+    ? accessExpression
+    : [accessExpression];
+  return from(access)
+    .pipe(
+      map(a => a.replace(':', '.')),
+      mergeMap(a => can(a)),
+      reduce((acc, value) => acc || value, false)
+    );
+}
+
+function can(path: string): Observable<boolean> {
   try {
-    const pathObject = getPathObject(path);
-    const access = group
-      ? mergeChildrenActions(pathObject, action)
-      : pathObject[action];
+    const access = configurationAccess[path];
     if (!!access) {
-      return testAccess(access);
+      return testAccess(Array.from(access));
     }
-    console.error(`Undefined action ${action} inside ${path}`);
+    console.error(`Undefined path ${path}`);
     return of(false);
   } catch (e) {
     console.error(e);
@@ -48,42 +67,12 @@ export function can(path: string, action: string, group = false): Observable<boo
   }
 }
 
-export function canExpression(accessExpression: string | Array<string>, group = false): Observable<boolean> {
-  const access = Array.isArray(accessExpression)
-    ? accessExpression
-    : [accessExpression];
-  return from(access)
-    .pipe(
-      map(a => a.split(ACCESS_SEPARATOR)),
-      mergeMap(a => can(a[0], a[1] || DEFAULT_ACTION, group)),
-      reduce((acc, value) => acc || value, false)
-    );
-}
-
-function getPathObject(path: string) {
-  return path.split(PATH_SEPARATOR)
-    .reduce(({currentPath, object}, prop) => {
-      if (prop in object) {
-        return {currentPath: `${currentPath}${prop}.`, object: object[prop]};
-      }
-      throw new Error(`${prop} is not defined inside ${currentPath} in your access configuration`);
-    }, {currentPath: 'ROOT', object: configurationAccess})
-    .object;
-}
-
-function mergeChildrenActions(path, action) {
-  return Object.values(path)
-    .filter(item => action in item)
-    .map(item => item[action])
-    .reduce((all, one) => [...all, one], []);
-}
-
 function testAccessReducer(
   access: Array<AccessType>,
   op: Operator,
   predicate: (a: boolean, v: boolean) => boolean,
   init: boolean
-) {
+): Observable<boolean> {
   return from(access as Array<AccessType>)
     .pipe(
       mergeMap(currentAccess => testAccess(currentAccess, op)),

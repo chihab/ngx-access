@@ -3,40 +3,52 @@ import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { AccessModule } from '../../public-api';
-import { AccessStrategy } from '../services';
+import { AccessStrategy } from '../services/access-strategy.service';
 
 @Component({
-  selector: 'ngx-has-access-test',
+  selector: 'ngx-access-cmp',
   template: ``
 })
 class TestComponent {
 }
 
+@Component({
+  selector: 'ngx-access-sub-cmp',
+  template: ``
+})
+class SubComponent {
+}
+
 export class MyAccessStrategy implements AccessStrategy {
   has(access: string): Observable<boolean> {
-    return of('CanAccess' === access);
+    return of(true);
   }
 }
 
-describe('HasAccess Directive', () => {
+describe('Access Directive', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         AccessModule.forRoot({
           accesses: {
             Resource: {
-              create: 'CanAccess'
+              Child1: {
+                create: 'CanAccess'
+              },
+              Child2: {
+                create: 'CanAccess'
+              }
             }
           },
           redirect: '/forbidden',
           strategy: {provide: AccessStrategy, useClass: MyAccessStrategy}
         }),
       ],
-      declarations: [TestComponent]
+      declarations: [TestComponent, SubComponent]
     });
   });
 
-  it('should display element when directive has not been applied', () => {
+  it('should display element when directive  not been applied', () => {
     TestBed.overrideTemplate(TestComponent, `<div></div>`);
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
     fixture.detectChanges();
@@ -45,7 +57,7 @@ describe('HasAccess Directive', () => {
   });
 
   it('should not create element when access not configured', () => {
-    TestBed.overrideTemplate(TestComponent, `<div *ngxHasAccess="'Something'"></div>`);
+    TestBed.overrideTemplate(TestComponent, `<div *ngxAccess="'Something'"></div>`);
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
     fixture.detectChanges();
     const de = fixture.debugElement.query(By.css('div'));
@@ -53,7 +65,7 @@ describe('HasAccess Directive', () => {
   });
 
   it('should create element when access configured and allowed', () => {
-    TestBed.overrideTemplate(TestComponent, `<div *ngxHasAccess="'Resource:create'"></div>`);
+    TestBed.overrideTemplate(TestComponent, `<div *ngxAccess="'Resource.create'"></div>`);
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
     fixture.detectChanges();
     const de = fixture.debugElement.query(By.css('div'));
@@ -63,12 +75,31 @@ describe('HasAccess Directive', () => {
   it('should create component from else template when access not given', () => {
     TestBed.overrideTemplate(TestComponent, `
         <ng-template #noAccess><span>No Access</span></ng-template>
-        <div *ngxHasAccess="'Resource:read', else: noAccess"></div>
+        <div *ngxAccess="'Resource.read', else: noAccess"></div>
     `);
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
     fixture.detectChanges();
     expect(fixture.debugElement.query(By.css('div'))).toBeNull();
     expect(fixture.debugElement.query(By.css('span'))).not.toBeNull();
+  });
+
+  it('should deduce path from parent component directive', () => {
+    TestBed.overrideTemplate(TestComponent, `
+      <h2> Parent Component </h2>
+      <div id="parent" ngxAccessPath="Resource:create">
+        <ng-container *ngxAccess>
+          <div id="child1" *ngxAccess="'$.Child1'"> Child 1 </div>
+          <div id="child2" *ngxAccess="'$.Child2'"> Child 2 </div>
+          <div id="child3" *ngxAccess="'$.Child3'"> Child 3 </div>
+        </ng-container>
+      </div>
+    `);
+    const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
+    fixture.detectChanges();
+    expect(fixture.debugElement.query(By.css('div#parent'))).toBeTruthy()
+    expect(fixture.debugElement.query(By.css('div#child1'))).toBeTruthy()
+    expect(fixture.debugElement.query(By.css('div#child2'))).toBeTruthy()
+    expect(fixture.debugElement.query(By.css('div#child3'))).toBeFalsy()
   });
 
 });

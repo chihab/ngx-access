@@ -1,1 +1,1 @@
-export * from './has-access.directive';
+export * from './access.directive';
