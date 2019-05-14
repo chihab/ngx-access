@@ -1,5 +1,5 @@
 import { from, Observable, of } from 'rxjs';
-import { mergeMap, reduce } from 'rxjs/operators';
+import { map, mergeMap, reduce } from 'rxjs/operators';
 import { flatten } from './flatten';
 
 export type HasAccessStrategy = (accessName: string) => Observable<boolean>;
@@ -33,12 +33,21 @@ export function setHasAccessStrategy(accessTest: HasAccessStrategy) {
   hasAccessStrategy = accessTest;
 }
 
+export function parse(expression) {
+  const arr = expression.split(':');
+  return {
+    path: (arr[0] || '').replace(' ', ''),
+    action: (arr[1] || '').replace(' ', '')
+  };
+}
+
 export function canExpression(accessExpression: string | Array<string>): Observable<boolean> {
   const access = Array.isArray(accessExpression)
     ? accessExpression
     : [accessExpression];
   return from(access)
     .pipe(
+      map(a => a.replace(':', '.')),
       mergeMap(a => can(a)),
       reduce((acc, value) => acc || value, false)
     );
@@ -50,7 +59,7 @@ function can(path: string): Observable<boolean> {
     if (!!access) {
       return testAccess(Array.from(access));
     }
-    console.error(`Undefined ${path}`);
+    console.error(`Undefined path ${path}`);
     return of(false);
   } catch (e) {
     console.error(e);

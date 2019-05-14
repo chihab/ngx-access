@@ -1,5 +1,6 @@
 import { Directive, Input, OnInit, TemplateRef, ViewContainerRef, Optional, SkipSelf, Host, AfterViewInit } from '@angular/core';
 import { AccessService } from '../services';
+import { parse } from '../helpers';
 
 @Directive({
   selector: '[ngxAccessPath]'
@@ -25,14 +26,17 @@ export class HasAccessDirective implements OnInit {
   ngOnInit() {
     let ngxHasAccess = this.ngxHasAccess;
     if (this.parentAccessPath) {
-      console.log("Parent Access Path" + this.parentAccessPath.ngxAccessPath);
+      const { path, action } = parse(this.parentAccessPath.ngxAccessPath);
       if (this.ngxHasAccess) {
-        ngxHasAccess = this.ngxHasAccess.replace('$', this.parentAccessPath.ngxAccessPath);
+        if (Array.isArray(this.ngxHasAccess)) {
+          ngxHasAccess = `${this.ngxHasAccess.map(access => access.replace('$', path))}:${action}`;
+        } else {
+          const { path: childPath, action: childAction } = parse(ngxHasAccess);
+          ngxHasAccess = `${childPath.replace('$', path)}:${childAction ? childAction : action}`;
+        }
       } else {
-        ngxHasAccess = this.parentAccessPath.ngxAccessPath;
+        ngxHasAccess = `${path}:${action}`;
       }
-    } else {
-      console.log("Undefined Parent Access Path");
     }
     this.accessService.can(ngxHasAccess)
       .subscribe(

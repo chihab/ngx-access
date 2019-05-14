@@ -86,11 +86,11 @@ describe('HasAccess Directive', () => {
   it('should deduce path from parent component directive', () => {
     TestBed.overrideTemplate(TestComponent, `
       <h2> Parent Component </h2>
-      <div id="parent" ngxAccessPath="Resource">
-        <ng-container *ngxHasAccess="'$.create'">
-          <div id="child1" *ngxHasAccess="'$.Child1.create'"> Child 1 </div>
-          <div id="child2" *ngxHasAccess="'$.Child2.create'"> Child 2 </div>
-          <div id="child3" *ngxHasAccess="'$.Child3.create'"> Child 3 </div>
+      <div id="parent" ngxAccessPath="Resource:create">
+        <ng-container *ngxHasAccess>
+          <div id="child1" *ngxHasAccess="'$.Child1'"> Child 1 </div>
+          <div id="child2" *ngxHasAccess="'$.Child2'"> Child 2 </div>
+          <div id="child3" *ngxHasAccess="'$.Child3'"> Child 3 </div>
         </ng-container>
       </div>
     `);
