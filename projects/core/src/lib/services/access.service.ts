@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ACCESS_CONFIG } from '../config';
-import { canExpression, setConfigurationAccess, setHasAccessStrategy } from '../helpers';
+import { canExpression, setConfigurationAccess, setHasAccessStrategy } from '../helpers/access-helpers';
 import { AccessStrategy } from './access-strategy.service';
 
 @Injectable({

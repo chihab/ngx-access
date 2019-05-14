@@ -1,7 +1,7 @@
-import { ACCESS_CONFIG } from './lib/config';
 import { ModuleWithProviders, NgModule, Provider } from '@angular/core';
-import { AccessStrategy, FakeAccessStrategy } from './lib/services';
-import { HasAccessDirective, AccessPathDirective } from './lib/directives';
+import { ACCESS_CONFIG } from './lib/config';
+import { AccessStrategy, FakeAccessStrategy } from './lib/services/access-strategy.service';
+import { AccessDirective, AccessPathDirective } from './lib/directives/access.directive';
 
 export * from './lib/directives';
 export * from './lib/helpers';
@@ -15,8 +15,8 @@ export interface AccessModuleConfig {
 }
 
 @NgModule({
-  declarations: [AccessPathDirective, HasAccessDirective],
-  exports: [AccessPathDirective, HasAccessDirective]
+  declarations: [AccessPathDirective, AccessDirective],
+  exports: [AccessPathDirective, AccessDirective]
 })
 export class AccessModule {
   static forRoot(config: AccessModuleConfig): ModuleWithProviders {
