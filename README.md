@@ -3,7 +3,7 @@
 Giving this configuration and this strategy
 
 ```ts
-import { AccessGuard, AccessModule, AccessStrategy } from 'core';
+import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
 
 /**
  * method is called over each matched service
@@ -55,9 +55,9 @@ export class AppModule { }
 
 ### Else statement
 ```html
-<app-user-form *ngxAccess="'Home.Main.User:Update'; else anotherBlock" [user]="user"></app-user-form>
+<app-user-form *ngxAccess="'Home.Main.User:Update'; else unauthorized" [user]="user"></app-user-form>
 
-<ng-template #anotherBlock>
+<ng-template #unauthorized>
   You do not have enough permissions to update user info
 </ng-template>
 ```
@@ -65,6 +65,7 @@ export class AppModule { }
 ### Group indicator
 ### Container Component
 ```html
+<div ngxAccessPath="Main.User:Read">
   <ng-container *ngxAccess>
       <input *ngxAccess="'$.Email'" [(ngModel)]="user.email"></span>
       <app-address *ngxAccess="'$.Address'" [(ngModel)]="user.address"></app-address>
@@ -80,6 +81,49 @@ export class AppModule { }
 <a href="" [routerLink]="['edit', user.id]" *ngxAccess="'Home.Main.User:Update'">
     Edit User
 </a>
+```
+
+## Guard
+```ts
+import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
+
+@NgModule({
+   declarations: [
+      AppComponent
+   ],
+   imports: [
+      AccessModule.forRoot({
+         accesses: {
+            User: {
+               Profile: {
+                  Read: 'CanAccessUserProfile'
+               },
+               Billing: {
+                  Read: 'CanAccessUserBilling'
+               }
+            }
+         },
+         redirect: '/forbidden',
+         strategy: { provide: AccessStrategy, useClass: MyAccessStrategy }
+      }),
+      RouterModule.forRoot([
+         ...
+         { path: 'forbidden', component: UnauthorizedComponent },
+         {
+            path: 'profile',
+            component: ProfileComponent,
+            canActivate: [AccessGuard],
+            data: {
+               expression: 'User.Profile:Read'
+            }
+         }
+      ]),
+      BrowserModule,
+      HttpClientModule
+   ],
+   bootstrap: [AppComponent]
+})
+export class AppModule { }
 ```
 
 ## Usage in code
