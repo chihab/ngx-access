@@ -1,7 +1,7 @@
 <div align="center">
   <h2>🔑 ngx-access 🔑</h2>
   <br />
-  Add access control to your components using hierarchal configuration.
+  Add access control to your components using hierarchical configuration.
   <br /><br />
 
   [![Npm version](https://badge.fury.io/js/ngx-access.svg)](https://npmjs.org/package/ngx-access)
@@ -17,7 +17,9 @@
 * Document your application security
 * Define your own strategy to verify if the user has a given access
 
-# In a Nutshell
+# In a nutshell
+
+#### Access control configuration
 
 ```json
 {
@@ -39,12 +41,13 @@
   }
 }
 ```
-
+#### Component template
 ```html
 <app-user-form *ngxAccess="'Home.Main.User:Update'" [user]="user"></app-user-form>
 ```
 
-```app-user-form``` component is displayed only if the user has at least one of the ```Update``` accesses defined in the ```Home.Main.User``` access path, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress``` accesses.
+#### Behavior
+```app-user-form``` component is displayed only if the user has at least one of the ```Update``` accesses defined in the ```Home.Main.User``` access path hierarchy, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress``` accesses.
 
 # Demo
 
@@ -108,7 +111,7 @@ const accesses = {
 export class AppModule { }
 ```
 
-## Usage in templates
+## Usage in template
 
 ### Simple usage
 
@@ -141,8 +144,9 @@ export class AppModule { }
 
 #### Repeat access path
 ```html
-<div *ngxAccess="Main.User:Read">
+<div>
     <input *ngxAccess="'Main.User.Email:Read'" [(ngModel)]="user.email"></span>
+    <input *ngxAccess="'Main.User.Password:Read'" [(ngModel)]="user.password"></span>
     <app-address *ngxAccess="'Main.User.Address:Read'" [(ngModel)]="user.address"></app-address>
 </div>
 ```
@@ -150,19 +154,20 @@ export class AppModule { }
 #### DRY version
 ```html
 <div ngxAccessPath="Main.User:Read">
-  <ng-container *ngxAccess>
-      <input *ngxAccess="'$.Email'" [(ngModel)]="user.email"></span>
-      <app-address *ngxAccess="'$.Address'" [(ngModel)]="user.address"></app-address>
-  </ng-container>
+    <input *ngxAccess="'$.Email'" [(ngModel)]="user.email"></span>
+    <input *ngxAccess="'$.Password'" [(ngModel)]="user.password"></span>
+    <app-address *ngxAccess="'$.Address'" [(ngModel)]="user.address"></app-address>
 </div>
 ```
+
+#### Explanation
 ``` $``` is replaced by ```Main.User```
 
 ``` Read``` is implicit in ```$.Email```
 
 ## Usage in code
 
-### Guard
+### Route guard
 ```ts
 import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
 
@@ -239,7 +244,7 @@ export class MainComponent implements OnInit {
 | Or |  ```"Access1 OR Access2"```  |  true if user has Access1 **OR** Access2 || 
 | And/Or |  ```"Access1 AND (Access2 OR Access3)"``` |  true if user has Access1 **AND** (Access2 **OR** Access3) |
 
-Example:
+#### Example
 ```json
 {
   "Home": {
@@ -253,6 +258,7 @@ Example:
 }
 ```
 
+#### Usage
 ```html
 <navbar>
   <a href="" routerLink="/notifications" *ngxAccess="'Home.Notifications:Read'">
@@ -261,6 +267,7 @@ Example:
 </navbar>
 ```
 
+#### Behavior
 Link is displayed only if user has ```CanReadNotifications``` access **AND** at least one of ```CanReadUpdateNotifications OR CanReadDeleteNotifications OR CanReadCreateNotifications``` accesses.
 
 

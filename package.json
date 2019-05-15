@@ -6,6 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "build:lib": "ng build core && cp README.md dist/core",
+    "build:publish": "cd dist/core && ",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
