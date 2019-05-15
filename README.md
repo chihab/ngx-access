@@ -1,3 +1,12 @@
+<div align="center">
+  <h2>🔑 ngx-access 🔑</h2>
+  <br />
+  Add access control to your components using hierarchal configuration.
+  <br /><br />
+
+  [![Npm version](https://badge.fury.io/js/ngx-access.svg)](https://npmjs.org/package/ngx-access)
+</div>
+
 # Benefits of ngx-access
 
 * No more endless if statements in your components
@@ -35,16 +44,22 @@
 <app-user-form *ngxAccess="'Home.Main.User:Update'" [user]="user"></app-user-form>
 ```
 
-```app-user-form``` component is displayed only if the user has at least one of the```Update``` accesses defined in the ```Home.Main.User``` access path, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress``` accesses.
+```app-user-form``` component is displayed only if the user has at least one of the ```Update``` accesses defined in the ```Home.Main.User``` access path, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress``` accesses.
+
+# Demo
+
+* https://stackblitz.com/edit/ngx-access
 
 
-# Installation
+# Getting Started
+
+#### Install ngx-access
 
 ```shell
 npm install --save ngx-access
 ```
 
-# Configuration
+#### Import AccessModule
 
 ```ts
 import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
@@ -93,9 +108,9 @@ const accesses = {
 export class AppModule { }
 ```
 
-# Usage in templates
+## Usage in templates
 
-## Simple usage
+### Simple usage
 
 ```html
 <app-user-form *ngxAccess="'Home.Main.User:Update'" [user]="user"></app-user-form>
@@ -107,12 +122,12 @@ export class AppModule { }
 </ng-template>
 ```
 
-## Multiple Access Paths
+### Multiple Access Paths
 ```html
 <app-home *ngxAccess="['Home.Main:Update', 'Home.Main:Read']"></app-home>
 ```
 
-## Router Links
+### Router Links
 ```html
 <a href="" [routerLink]="['view', user.id]" *ngxAccess="'Home.Main.User:Read'">
     View User
@@ -122,9 +137,9 @@ export class AppModule { }
 </a>
 ```
 
-## Container Component
+### Container Component
 
-### Repeat access path
+#### Repeat access path
 ```html
 <div *ngxAccess="Main.User:Read">
     <input *ngxAccess="'Main.User.Email:Read'" [(ngModel)]="user.email"></span>
@@ -132,7 +147,7 @@ export class AppModule { }
 </div>
 ```
 
-### Dry version
+#### DRY version
 ```html
 <div ngxAccessPath="Main.User:Read">
   <ng-container *ngxAccess>
@@ -145,9 +160,9 @@ export class AppModule { }
 
 ``` Read``` is implicit in ```$.Email```
 
-# Usage in code
+## Usage in code
 
-## Guard
+### Guard
 ```ts
 import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
 
@@ -190,7 +205,7 @@ import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
 export class AppModule { }
 ```
 
-## Component
+### Component
 ```ts
 import { Component, OnInit } from '@angular/core';
 import { AccessService } from 'ngx-access';

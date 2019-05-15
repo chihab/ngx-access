@@ -2,7 +2,7 @@ import { RouterModule } from '@angular/router';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LazyComponent } from './lazy/lazy.component';
-import { AccessModule } from 'core';
+import { AccessModule } from 'ngx-access';
 
 @NgModule({
   declarations: [LazyComponent],

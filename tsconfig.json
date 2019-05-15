@@ -19,10 +19,10 @@
       "dom"
     ],
     "paths": {
-      "core": [
+      "ngx-access": [
         "dist/core"
       ],
-      "core/*": [
+      "ngx-access/*": [
         "dist/core/*"
       ]
     }
