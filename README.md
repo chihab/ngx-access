@@ -47,7 +47,7 @@
 ```
 
 #### Behavior
-```app-user-form``` component is displayed only if the user has at least one of the ```Update``` accesses defined in the ```Home.Main.User``` access path hierarchy, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress``` accesses.
+```app-user-form``` component is displayed only if user has at least one of the ```Update``` accesses defined in the ```Home.Main.User``` access path hierarchy, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress``` accesses.
 
 # Demo
 
@@ -62,8 +62,7 @@
 npm install --save ngx-access
 ```
 
-#### Import AccessModule
-
+#### Define the access control strategy
 ```ts
 import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
 
@@ -78,7 +77,11 @@ export class TrueAccessStrategy implements AccessStrategy {
     return of(true);
   }
 }
+```
 
+#### Import AccessModule
+
+```ts
 // Better define in a configuration file [See below]
 const accesses = {
   Home: {
@@ -145,15 +148,15 @@ export class AppModule { }
 #### Repeat access path
 ```html
 <div>
-    <input *ngxAccess="'Main.User.Email:Read'" [(ngModel)]="user.email"></span>
-    <input *ngxAccess="'Main.User.Password:Read'" [(ngModel)]="user.password"></span>
-    <app-address *ngxAccess="'Main.User.Address:Read'" [(ngModel)]="user.address"></app-address>
+    <input *ngxAccess="'Main.User.Email:Update'" [(ngModel)]="user.email"></span>
+    <input *ngxAccess="'Main.User.Password:Update'" [(ngModel)]="user.password"></span>
+    <app-address *ngxAccess="'Main.User.Address:Update'" [(ngModel)]="user.address"></app-address>
 </div>
 ```
 
 #### DRY version
 ```html
-<div ngxAccessPath="Main.User:Read">
+<div ngxAccess="Main.User:Update">
     <input *ngxAccess="'$.Email'" [(ngModel)]="user.email"></span>
     <input *ngxAccess="'$.Password'" [(ngModel)]="user.password"></span>
     <app-address *ngxAccess="'$.Address'" [(ngModel)]="user.address"></app-address>
@@ -161,9 +164,9 @@ export class AppModule { }
 ```
 
 #### Explanation
-``` $``` is replaced by ```Main.User```
+``` $``` is replaced by ```Main.User```. 
 
-``` Read``` is implicit in ```$.Email```
+``` Read``` is appended to the resulting string.
 
 ## Usage in code
 
@@ -172,9 +175,6 @@ export class AppModule { }
 import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
 
 @NgModule({
-   declarations: [
-      AppComponent
-   ],
    imports: [
       AccessModule.forRoot({
          accesses: {
@@ -201,11 +201,9 @@ import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
                expression: 'User.Profile:Read'
             }
          }
-      ]),
-      BrowserModule,
-      HttpClientModule
-   ],
-   bootstrap: [AppComponent]
+      ])
+   ]
+   ...Update
 })
 export class AppModule { }
 ```
@@ -220,7 +218,7 @@ import { AccessService } from 'ngx-access';
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.css']
 })
-export class MainComponent implements OnInit {
+export class MainComponent {
   constructor(private accessService: AccessService) { }
 
   submit() {
@@ -269,5 +267,56 @@ export class MainComponent implements OnInit {
 
 #### Behavior
 Link is displayed only if user has ```CanReadNotifications``` access **AND** at least one of ```CanReadUpdateNotifications OR CanReadDeleteNotifications OR CanReadCreateNotifications``` accesses.
+
+## External access configuration
+
+#### 1. Enable JSON imports
+```json
+{
+  ...
+  "compilerOptions": {
+    ...
+    "declaration": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    ...
+  }
+}
+```
+
+#### 2. Create access configuration
+```json
+{
+  "Home": {
+    "User": {
+      "Email": {
+        "Read": "CanReadUserEmail",
+        "Update": "CanUpdateUserEmail"
+      },
+      "Password": {
+        "Update": "CanUpdateUserPassword"
+      },
+      "Address": {
+        "Update": "CanUpdateUserAddress"
+      }
+    }
+  }
+}
+```
+
+#### 3. Import access configuration
+```ts
+import accesses from './path/to/access.json';
+
+@NgModule({
+   imports: [
+      AccessModule.forRoot({
+         accesses,
+         ...
+      })
+   ]
+   ... 
+})
+```
 
 

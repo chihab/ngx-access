@@ -37,7 +37,7 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
             component: ProfileComponent,
             canActivate: [AccessGuard],
             data: {
-               expression: 'Hello.View:read'
+               path: 'Hello.View:read'
             }
          }
       ]),

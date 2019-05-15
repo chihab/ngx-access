@@ -41,7 +41,7 @@ describe('Access Directive', () => {
             }
           },
           redirect: '/forbidden',
-          strategy: {provide: AccessStrategy, useClass: MyAccessStrategy}
+          strategy: { provide: AccessStrategy, useClass: MyAccessStrategy }
         }),
       ],
       declarations: [TestComponent, SubComponent]
@@ -86,12 +86,10 @@ describe('Access Directive', () => {
   it('should deduce path from parent component directive', () => {
     TestBed.overrideTemplate(TestComponent, `
       <h2> Parent Component </h2>
-      <div id="parent" ngxAccessPath="Resource:create">
-        <ng-container *ngxAccess>
-          <div id="child1" *ngxAccess="'$.Child1'"> Child 1 </div>
-          <div id="child2" *ngxAccess="'$.Child2'"> Child 2 </div>
-          <div id="child3" *ngxAccess="'$.Child3'"> Child 3 </div>
-        </ng-container>
+      <div id="parent" ngxAccess="Resource:create">
+        <div id="child1" *ngxAccess="'$.Child1'"> Child 1 </div>
+        <div id="child2" *ngxAccess="'$.Child2'"> Child 2 </div>
+        <div id="child3" *ngxAccess="'$.Child3'"> Child 3 </div>
       </div>
     `);
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
