@@ -1,6 +1,14 @@
-# WIP - Do not used in production
+# Benefits of ngx-access
 
-## In a Nutshell
+* No more endless if statements in your components
+* Define only the accesses you really need
+* Do not add useless accesses for your Route/Layout components
+* Define your access control as logical expressions
+* Centralize your Access Control configuration
+* Define your own strategy to verify if the user has a given access
+* Document your Application Security
+
+# In a Nutshell
 
 ```json
 {
@@ -27,15 +35,16 @@
 <app-user-form *ngxAccess="'Home.Main.User:Update'" [user]="user"></app-user-form>
 ```
 
-```app-user-form``` component is displayed only if the user has at least one of the```Update``` accesses defined in the ```Home.Main.User``` access path, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress accesses```.
+```app-user-form``` component is displayed only if the user has at least one of the```Update``` accesses defined in the ```Home.Main.User``` access path, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress``` accesses.
 
-## Installation
+
+# Installation
 
 ```shell
 npm install --save ngx-access
 ```
 
-## Configuration
+# Configuration
 
 ```ts
 import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
@@ -84,6 +93,10 @@ const accesses = {
 export class AppModule { }
 ```
 
+# Usage in templates
+
+## Else block
+
 ```html
 <app-user-form *ngxAccess="'Home.Main.User:Update'" [user]="user"></app-user-form>
 
@@ -94,12 +107,12 @@ export class AppModule { }
 </ng-template>
 ```
 
-### Multiple Access Paths
+## Multiple Access Paths
 ```html
 <app-home *ngxAccess="['Home.Main:Update', 'Home.Main:Read']"></app-home>
 ```
 
-### Basic usage in Router Links
+## Router Links
 ```html
 <a href="" [routerLink]="['view', user.id]" *ngxAccess="'Home.Main.User:Read'">
     View User
@@ -109,7 +122,7 @@ export class AppModule { }
 </a>
 ```
 
-### Container Component
+## Container Component
 ```html
 <div ngxAccessPath="Main.User:Read">
   <ng-container *ngxAccess>
@@ -118,6 +131,7 @@ export class AppModule { }
   </ng-container>
 </div>
 ```
+# Usage in code
 
 ## Guard
 ```ts
@@ -162,7 +176,7 @@ import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
 export class AppModule { }
 ```
 
-## Usage in code
+## Component
 ```ts
 import { Component, OnInit } from '@angular/core';
 import { AccessService } from 'ngx-access';
@@ -175,13 +189,14 @@ import { AccessService } from 'ngx-access';
 export class MainComponent implements OnInit {
   constructor(private accessService: AccessService) { }
 
-  hasReadAccess() {
-    return this.accessService.hasAccess('Home.Main:Read');
+  submit() {
+    let formData = {};
+    if (this.accessService.hasAccess('User.Profile:Update')) {
+      // Populate formData...
+    }
+    ...
   }
 
-  hasCreateAccess() {
-    return this.accessService.hasAccess('Home.Main:Create');
-  }
 }  
 ```
 
