@@ -4,9 +4,9 @@
 * Define only the accesses you really need
 * Do not add useless accesses for your Route/Layout components
 * Define your access control as logical expressions
-* Centralize your Access Control configuration
+* Centralize your access control configuration
+* Document your application security
 * Define your own strategy to verify if the user has a given access
-* Document your Application Security
 
 # In a Nutshell
 
@@ -50,7 +50,7 @@ npm install --save ngx-access
 import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
 
 @Injectable()
-export class AlwaysTrueAccessStrategy implements AccessStrategy {
+export class TrueAccessStrategy implements AccessStrategy {
   /**
   * called method over each matched access
   * example: CanUpdateUserEmail
@@ -95,7 +95,7 @@ export class AppModule { }
 
 # Usage in templates
 
-## Else block
+## Simple usage
 
 ```html
 <app-user-form *ngxAccess="'Home.Main.User:Update'" [user]="user"></app-user-form>
@@ -123,6 +123,16 @@ export class AppModule { }
 ```
 
 ## Container Component
+
+### Repeat access path
+```html
+<div *ngxAccess="Main.User:Read">
+    <input *ngxAccess="'Main.User.Email:Read'" [(ngModel)]="user.email"></span>
+    <app-address *ngxAccess="'Main.User.Address:Read'" [(ngModel)]="user.address"></app-address>
+</div>
+```
+
+### Dry version
 ```html
 <div ngxAccessPath="Main.User:Read">
   <ng-container *ngxAccess>
@@ -131,6 +141,10 @@ export class AppModule { }
   </ng-container>
 </div>
 ```
+``` $``` is replaced by ```Main.User```
+
+``` Read``` is implicit in ```$.Email```
+
 # Usage in code
 
 ## Guard
