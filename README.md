@@ -1,15 +1,51 @@
-## Configuration
+# WIP - Do not used in production
 
-Giving this configuration and this strategy
+## In a Nutshell
+
+```json
+{
+  "Home": {
+    "Main": {
+      "User": {
+        "Email": {
+          "Read": "CanReadUserEmail",
+          "Update": "CanUpdateUserEmail"
+        },
+        "Password": {
+          "Update": "CanUpdateUserPassword"
+        },
+        "Address": {
+          "Update": "CanUpdateUserAddress"
+        }
+      }
+    }
+  }
+}
+```
+
+```html
+<app-user-form *ngxAccess="'Home.Main.User:Update'" [user]="user"></app-user-form>
+```
+
+```app-user-form``` component is displayed only if the user has at least one of the```Update``` accesses defined in the ```Home.Main.User``` access path, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress accesses```.
+
+## Installation
+
+```shell
+npm install --save ngx-access
+```
+
+## Configuration
 
 ```ts
 import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
 
-/**
- * method is called over each matched service
- **/
 @Injectable()
 export class AlwaysTrueAccessStrategy implements AccessStrategy {
+  /**
+  * called method over each matched access
+  * example: CanUpdateUserEmail
+  **/
   has(access: string): Observable<boolean> {
     // return this.authService.getUserAccesses().some(userAccess => userAccess === access)
     return of(true);
@@ -48,13 +84,9 @@ const accesses = {
 export class AppModule { }
 ```
 
-### Check in template if user has access
 ```html
 <app-user-form *ngxAccess="'Home.Main.User:Update'" [user]="user"></app-user-form>
-```
 
-### Else statement
-```html
 <app-user-form *ngxAccess="'Home.Main.User:Update'; else unauthorized" [user]="user"></app-user-form>
 
 <ng-template #unauthorized>
@@ -62,7 +94,21 @@ export class AppModule { }
 </ng-template>
 ```
 
-### Group indicator
+### Multiple Access Paths
+```html
+<app-home *ngxAccess="['Home.Main:Update', 'Home.Main:Read']"></app-home>
+```
+
+### Basic usage in Router Links
+```html
+<a href="" [routerLink]="['view', user.id]" *ngxAccess="'Home.Main.User:Read'">
+    View User
+</a>
+<a href="" [routerLink]="['edit', user.id]" *ngxAccess="'Home.Main.User:Update'">
+    Edit User
+</a>
+```
+
 ### Container Component
 ```html
 <div ngxAccessPath="Main.User:Read">
@@ -71,16 +117,6 @@ export class AppModule { }
       <app-address *ngxAccess="'$.Address'" [(ngModel)]="user.address"></app-address>
   </ng-container>
 </div>
-```
-
-### Router Link
-```html
-<a href="" [routerLink]="['view', user.id]" *ngxAccess="'Home.Main.User:Read'">
-    View User
-</a>
-<a href="" [routerLink]="['edit', user.id]" *ngxAccess="'Home.Main.User:Update'">
-    Edit User
-</a>
 ```
 
 ## Guard
@@ -150,10 +186,37 @@ export class MainComponent implements OnInit {
 ```
 
 ## Configuration
+
 | Type  |  Description | Evaluation  |
 |---|---|---|
 |  Single |  ```"Access1"``` |  true if user  has Access1 |
+|  Array |  ```["Access1", "Access2"]``` |  true if user has Access1 **OR** Access2|
 |  And |  ```"Access1 AND Access2"``` |  true if user has Access1 **AND** Access2. |
-|  Or |  ```["Access1", ["Access1", "Access2"]]```  |  true if user has Access1 **OR** (Access2 **OR** Access3) |
-|  And/Or |  ```["Access1", ["Access2 AND Access3"]]```  |  true if user has Access1 **OR** (Access2 **AND** Access3) |
+| Or |  ```"Access1 OR Access2"```  |  true if user has Access1 **OR** Access2 || 
+| And/Or |  ```"Access1 AND (Access2 OR Access3)"``` |  true if user has Access1 **AND** (Access2 **OR** Access3) |
+
+Example:
+```json
+{
+  "Home": {
+    "Notifications": {
+       "Read": "
+          CanReadNotifications AND 
+          (CanReadUpdateNotifications OR CanReadDeleteNotifications OR CanReadCreateNotifications)
+        "
+    }
+  }
+}
+```
+
+```html
+<navbar>
+  <a href="" routerLink="/notifications" *ngxAccess="'Home.Notifications:Read'">
+      Display Notifications
+  </a>
+</navbar>
+```
+
+Link is displayed only if user has ```CanReadNotifications``` access **AND** at least one of ```CanReadUpdateNotifications OR CanReadDeleteNotifications OR CanReadCreateNotifications``` accesses.
+
 
