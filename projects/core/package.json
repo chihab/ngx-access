@@ -1,8 +1,27 @@
 {
   "name": "ngx-access",
-  "version": "0.1.2",
+  "version": "0.1.3",
+  "description": "Add access control to your components using hierarchal configuration.",
+  "author": "Chihab Otmani",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chihab/ngx-access.git"
+  },
+  "keywords": [
+    "angular",
+    "permissions",
+    "access-control",
+    "ngx-access",
+    "roles"
+  ],
+  "homepage": "https://github.com/chihab/ngx-access#readme",
+  "bugs": {
+    "url": "https://github.com/chihab/ngx-access/issues"
+  },
+  "license": "MIT",
   "peerDependencies": {
-    "@angular/common": "^7.2.0",
-    "@angular/core": "^7.2.0"
+    "@angular/animations": ">=6.0.0",
+    "@angular/common": ">=6.0.0",
+    "@angular/core": ">=6.0.0"
   }
 }

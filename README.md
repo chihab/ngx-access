@@ -43,7 +43,7 @@
 ```
 #### Component template
 ```html
-<app-user-form *ngxAccess="'Home.Main.User:Update'" [user]="user"></app-user-form>
+<app-user-form *ngxAccess="'Home.Main.User:Update'"></app-user-form>
 ```
 
 #### Behavior
@@ -70,7 +70,7 @@ import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
 export class TrueAccessStrategy implements AccessStrategy {
   /**
   * called method over each matched access
-  * example: CanUpdateUserEmail
+  * example: has("CanUpdateUserEmail")
   **/
   has(access: string): Observable<boolean> {
     // return this.authService.getUserAccesses().some(userAccess => userAccess === access)
@@ -166,7 +166,7 @@ export class AppModule { }
 #### Explanation
 ``` $``` is replaced by ```Main.User```. 
 
-``` Read``` is appended to the resulting string.
+``` Update``` is appended to the resulting string.
 
 ## Usage in code
 
@@ -203,7 +203,7 @@ import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
          }
       ])
    ]
-   ...Update
+   ...
 })
 export class AppModule { }
 ```
@@ -270,7 +270,7 @@ Link is displayed only if user has ```CanReadNotifications``` access **AND** at 
 
 ## External access configuration
 
-#### 1. Enable JSON imports
+#### 1. Enable JSON imports in tsconfig.json
 ```json
 {
   ...
@@ -284,7 +284,7 @@ Link is displayed only if user has ```CanReadNotifications``` access **AND** at 
 }
 ```
 
-#### 2. Create access configuration
+#### 2. Create ngx-access configuration
 ```json
 {
   "Home": {
@@ -304,7 +304,7 @@ Link is displayed only if user has ```CanReadNotifications``` access **AND** at 
 }
 ```
 
-#### 3. Import access configuration
+#### 3. Import ngx-access configuration
 ```ts
 import accesses from './path/to/access.json';
 
@@ -318,5 +318,8 @@ import accesses from './path/to/access.json';
    ... 
 })
 ```
+
+# License
+MIT © [Chihab Otmani](mailto:chihab@gmail.com)
 
 
