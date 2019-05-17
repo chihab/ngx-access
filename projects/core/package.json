@@ -1,6 +1,6 @@
 {
   "name": "ngx-access",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Add access control to your components using hierarchal configuration.",
   "author": "Chihab Otmani",
   "repository": {

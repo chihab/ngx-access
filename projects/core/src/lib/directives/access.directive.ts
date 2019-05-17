@@ -2,13 +2,6 @@ import { Directive, Input, OnInit, TemplateRef, ViewContainerRef, Optional, Skip
 import { AccessService } from '../services/access.service';
 import { parse } from '../helpers/access-helpers';
 
-// @Directive({
-//   selector: '[ngxAccessPath]'
-// })
-// export class AccessPathDirective {
-//   @Input() ngxAccessPath: string;
-// }
-
 @Directive({
   selector: '[ngxAccess]'
 })
@@ -20,14 +13,14 @@ export class AccessDirective implements OnInit {
   constructor(@Optional() private template: TemplateRef<any>,
     private viewContainer: ViewContainerRef,
     private accessService: AccessService,
-    @Optional() @SkipSelf() @Host() private parentAccessPath: AccessDirective) {
+    @Optional() @SkipSelf() @Host() private parentAccessDirective: AccessDirective) {
   }
 
   ngOnInit() {
     if (this.template) {
       let ngxAccess = this.ngxAccess;
-      if (this.parentAccessPath) {
-        const { path, action } = parse(this.parentAccessPath.ngxAccess);
+      if (this.parentAccessDirective) {
+        const { path, action } = parse(this.parentAccessDirective.ngxAccess);
         if (this.ngxAccess) {
           if (Array.isArray(this.ngxAccess)) {
             ngxAccess = `${this.ngxAccess.map(access => access.replace('$', path))}:${action}`;

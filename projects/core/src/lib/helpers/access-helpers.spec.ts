@@ -169,4 +169,35 @@ describe('AccessHelpers', () => {
       });
   });
 
+  xit('should evaluate expression with AND operator and parenthesis', (done: DoneFn) => {
+    setConfigurationAccess({
+      View: {
+        Resource1: {
+          Read: 'Read1 OR Read2'
+        },
+        Resource2: {
+          Read: 'ReadResource2 AND (Read3 OR Read4)'
+        }        
+      }
+    });
+    hasAccessStrategy.and.callFake((access) => {
+      const userAccesses = ['ReadAccess', 'Read3'];
+      return of(
+        userAccesses.findIndex(a => a === access) !== -1
+      );
+    });
+    canExpression('View:Read')
+      .subscribe(value => {
+        expect(value).toBe(true);
+        expect(hasAccessStrategy).toHaveBeenCalledWith('Read1');
+        expect(hasAccessStrategy).toHaveBeenCalledWith('Read2');
+        expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource2');
+        expect(hasAccessStrategy).toHaveBeenCalledWith('Read3');
+        expect(hasAccessStrategy).toHaveBeenCalledWith('Read4');        
+        done();
+      });
+  });
+
 });
+
+

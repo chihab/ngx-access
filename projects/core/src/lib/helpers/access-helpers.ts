@@ -22,7 +22,7 @@ let hasAccessStrategy: HasAccessStrategy = () => of(false);
 export function setConfigurationAccess(config) {
   function parse(expression: string) {
     return {
-      list: expression.split(' && '),
+      list: expression.split(' AND '),
       operator: Operator.AND
     };
   }

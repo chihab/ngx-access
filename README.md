@@ -34,6 +34,7 @@
           "Update": "CanUpdateUserPassword"
         },
         "Address": {
+          "Read": "CanReadUserAddress",
           "Update": "CanUpdateUserAddress"
         }
       }
@@ -51,7 +52,7 @@
 
 # Demo
 
-* https://stackblitz.com/edit/ngx-access
+* https://stackblitz.com/github/chihab/ngx-access
 
 
 # Getting Started
@@ -64,7 +65,7 @@ npm install --save ngx-access
 
 #### Define the access control strategy
 ```ts
-import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
+import { AccessStrategy } from 'ngx-access';
 
 @Injectable()
 export class TrueAccessStrategy implements AccessStrategy {
@@ -82,6 +83,8 @@ export class TrueAccessStrategy implements AccessStrategy {
 #### Import AccessModule
 
 ```ts
+import { AccessGuard, AccessModule } from 'ngx-access';
+
 // Better define in a configuration file [See below]
 const accesses = {
   Home: {
@@ -95,6 +98,7 @@ const accesses = {
           Update: "CanUpdateUserPassword"
         },
         Address: {
+          Read: "CanReadUserAddress",
           Update: "CanUpdateUserAddress"
         }
       }
@@ -239,8 +243,8 @@ export class MainComponent {
 |  Single |  ```"Access1"``` |  true if user  has Access1 |
 |  Array |  ```["Access1", "Access2"]``` |  true if user has Access1 **OR** Access2|
 |  And |  ```"Access1 AND Access2"``` |  true if user has Access1 **AND** Access2. |
-| Or |  ```"Access1 OR Access2"```  |  true if user has Access1 **OR** Access2 || 
-| And/Or |  ```"Access1 AND (Access2 OR Access3)"``` |  true if user has Access1 **AND** (Access2 **OR** Access3) |
+| Or [WIP] |  ```"Access1 OR Access2"```  |  true if user has Access1 **OR** Access2 || 
+| And/Or [WIP] |  ```"Access1 AND (Access2 OR Access3)"``` |  true if user has Access1 **AND** (Access2 **OR** Access3) |
 
 #### Example
 ```json
