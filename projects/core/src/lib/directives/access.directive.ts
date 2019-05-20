@@ -1,14 +1,16 @@
 import { Directive, Input, OnInit, TemplateRef, ViewContainerRef, Optional, SkipSelf, Host, AfterViewInit } from '@angular/core';
 import { AccessService } from '../services/access.service';
 import { parse } from '../helpers/access-helpers';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Directive({
   selector: '[ngxAccess]'
 })
 export class AccessDirective implements OnInit {
-
   @Input() ngxAccess: string | Array<string>;
   @Input() ngxAccessElse: TemplateRef<any>;
+  onDestroy$ = new Subject<void>();
 
   constructor(@Optional() private template: TemplateRef<any>,
     private viewContainer: ViewContainerRef,
@@ -33,6 +35,7 @@ export class AccessDirective implements OnInit {
         }
       }
       this.accessService.can(ngxAccess)
+        .pipe(takeUntil(this.onDestroy$))
         .subscribe(
           access => access
             ? this.viewContainer.createEmbeddedView(this.template)
@@ -41,5 +44,10 @@ export class AccessDirective implements OnInit {
               : null
         );
     }
+  }
+
+  ngOnDestroy(): void {
+    this.onDestroy$.next();
+    this.onDestroy$.complete();
   }
 }
