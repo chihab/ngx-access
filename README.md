@@ -5,12 +5,12 @@
   <br /><br />
 
   [![Npm version](https://badge.fury.io/js/ngx-access.svg)](https://npmjs.org/package/ngx-access)
+  [![Build Status](https://travis-ci.org/chihab/ngx-access.svg?branch=master)](https://travis-ci.org/chihab/ngx-access)
 </div>
 
 # Benefits of ngx-access
 
-* No more endless if statements in your components
-* Define only the accesses you really need
+* No more endless "ngIf statements" in your components
 * Do not add useless accesses for your Route/Layout components
 * Define your access control as logical expressions
 * Centralize your access control configuration
@@ -44,7 +44,7 @@
 ```
 #### Component template
 ```html
-<app-user-form *ngxAccess="'Home.Main.User:Update'"></app-user-form>
+<app-user-form *ngxAccess="'Home.Main.User : Update'"></app-user-form>
 ```
 
 #### Behavior
