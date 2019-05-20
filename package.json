@@ -7,6 +7,8 @@
     "build": "ng build",
     "build:lib": "ng build core && cp README.md dist/core",
     "test": "ng test",
+    "test:lib": "ng test core --watch=false --browsers=ChromeHeadless",
+    "release:lib": "cd projects/core && npm version patch",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
