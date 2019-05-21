@@ -11,7 +11,7 @@ describe('AccessHelpers', () => {
   });
 
   it('should prevent access when no access configuration has been set', (done: DoneFn) => {
-    canExpression('Resource.View')
+    canExpression('Resource:View')
       .subscribe(value => {
         expect(value).toBe(false);
         done();
@@ -20,7 +20,7 @@ describe('AccessHelpers', () => {
 
   it('should prevent access when access configuration has been initialized with empty object', (done: DoneFn) => {
     setConfigurationAccess({});
-    canExpression('Resource.View')
+    canExpression('Resource:View')
       .subscribe(value => {
         expect(value).toBe(false);
         done();
@@ -34,7 +34,7 @@ describe('AccessHelpers', () => {
         create: ['UnknownAccess']
       }
     });
-    canExpression('Unknown.create').subscribe(() => {
+    canExpression('Unknown:create').subscribe(() => {
       expect(hasAccessStrategy).not.toHaveBeenCalled();
       done();
     });
@@ -57,7 +57,7 @@ describe('AccessHelpers', () => {
         }
       }
     });
-    canExpression('Resource.SubResource1.Read').subscribe(_ => {
+    canExpression('Resource.SubResource1:Read').subscribe(_ => {
       expect(hasAccessStrategy).toHaveBeenCalledWith('ReadAccess1');
       expect(hasAccessStrategy).toHaveBeenCalledWith('ReadAccess2');
       done();
@@ -76,7 +76,7 @@ describe('AccessHelpers', () => {
         ]
       }
     });
-    canExpression('Resource.create').subscribe(_ => {
+    canExpression('Resource:create').subscribe(_ => {
       expect(hasAccessStrategy).toHaveBeenCalledWith('CreateAccess');
       done();
     });
@@ -94,7 +94,7 @@ describe('AccessHelpers', () => {
         ]
       }
     });
-    canExpression('Resource.array').subscribe(_ => {
+    canExpression('Resource:array').subscribe(_ => {
       expect(hasAccessStrategy).not.toHaveBeenCalledWith('OtherAccess');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access1');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access2');
@@ -114,7 +114,7 @@ describe('AccessHelpers', () => {
         ]
       }
     });
-    canExpression('Resource.complex').subscribe(_ => {
+    canExpression('Resource:complex').subscribe(_ => {
       expect(hasAccessStrategy).not.toHaveBeenCalledWith('OtherAccess');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access1');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access2');
@@ -157,7 +157,7 @@ describe('AccessHelpers', () => {
       }
     });
     hasAccessStrategy.and.returnValue(of(false)); // In order to check out all children access
-    canExpression('View.Read')
+    canExpression('View:Read')
       .subscribe(value => {
         expect(value).toBe(false);
         expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource1Access');

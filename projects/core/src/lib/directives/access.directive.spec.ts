@@ -33,10 +33,10 @@ describe('Access Directive', () => {
           accesses: {
             Resource: {
               Child1: {
-                create: 'CanAccess'
+                Create: 'CanAccess'
               },
               Child2: {
-                create: 'CanAccess'
+                Create: 'CanAccess'
               }
             }
           },
@@ -65,7 +65,7 @@ describe('Access Directive', () => {
   });
 
   it('should create element when access configured and allowed', () => {
-    TestBed.overrideTemplate(TestComponent, `<div *ngxAccess="'Resource.create'"></div>`);
+    TestBed.overrideTemplate(TestComponent, `<div *ngxAccess="'Resource:Create'"></div>`);
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
     fixture.detectChanges();
     const de = fixture.debugElement.query(By.css('div'));
@@ -75,7 +75,7 @@ describe('Access Directive', () => {
   it('should create component from else template when access not given', () => {
     TestBed.overrideTemplate(TestComponent, `
         <ng-template #noAccess><span>No Access</span></ng-template>
-        <div *ngxAccess="'Resource.read', else: noAccess"></div>
+        <div *ngxAccess="'Resource:Read', else: noAccess"></div>
     `);
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
     fixture.detectChanges();
@@ -86,7 +86,7 @@ describe('Access Directive', () => {
   it('should deduce path from parent component directive', () => {
     TestBed.overrideTemplate(TestComponent, `
       <h2> Parent Component </h2>
-      <div id="parent" ngxAccess="Resource:create">
+      <div id="parent" ngxAccess="Resource:Create">
         <div id="child1" *ngxAccess="'$.Child1'"> Child 1 </div>
         <div id="child2" *ngxAccess="'$.Child2'"> Child 2 </div>
         <div id="child3" *ngxAccess="'$.Child3'"> Child 3 </div>

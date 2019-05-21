@@ -1,4 +1,4 @@
-export function flatten(config, { parse = v => v, group = false, delimiter = '.' } = {}) {
+export function flatten(config, { parse = v => v, group = false } = {}) {
   const flatConfig = {};
 
   function setConfig(path, value) {
@@ -8,7 +8,7 @@ export function flatten(config, { parse = v => v, group = false, delimiter = '.'
     flatConfig[path].add(value);
   }
 
-  function getPath(path, prop) {
+  function getPath(path, delimiter, prop) {
     return path
       ? path + delimiter + prop
       : prop;
@@ -20,16 +20,16 @@ export function flatten(config, { parse = v => v, group = false, delimiter = '.'
         visitor(accesses, prop, access, path);
       });
     } else if (typeof value === 'object') {
-      const childrenAccesses = children(value, getPath(path, prop));
+      const childrenAccesses = children(value, getPath(path, '.', prop));
       if (group) {
         accesses = accesses.concat(childrenAccesses);
         accesses.forEach(access => {
-          setConfig(getPath(path, access.prop), access.action);
+          setConfig(getPath(path, ':', access.prop), access.action);
         });
       }
     } else {
       const expression = parse(value);
-      setConfig(getPath(path, prop), expression);
+      setConfig(getPath(path, ':', prop), expression);
       accesses = accesses.concat({ action: expression, prop });
     }
     return accesses;
@@ -43,5 +43,6 @@ export function flatten(config, { parse = v => v, group = false, delimiter = '.'
   }
 
   children(config);
+  console.log(flatConfig);
   return flatConfig;
 }

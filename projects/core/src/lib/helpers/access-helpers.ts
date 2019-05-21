@@ -34,10 +34,10 @@ export function setHasAccessStrategy(accessTest: HasAccessStrategy) {
 }
 
 export function parse(expression) {
-  const arr = expression.split(':');
+  const arr = expression.replace(/\s/g, '').split(':');
   return {
-    path: (arr[0] || '').replace(' ', ''),
-    action: (arr[1] || '').replace(' ', '')
+    path: (arr[0] || ''),
+    action: (arr[1] || '')
   };
 }
 
@@ -47,7 +47,7 @@ export function canExpression(accessExpression: string | Array<string>): Observa
     : [accessExpression];
   return from(access)
     .pipe(
-      map(a => a.replace(':', '.')),
+      map(a => a.replace(/\s/g, '')),
       mergeMap(a => can(a)),
       reduce((acc, value) => acc || value, false)
     );

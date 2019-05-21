@@ -15,7 +15,7 @@ export class AccessGuard implements CanActivate {
 
   canActivate(
     next: ActivatedRouteSnapshot): Observable<boolean> {
-    return this.accessService.can(next.data.path)
+    return this.accessService.can(next.data.accesses)
       .pipe(
         tap(hasAccess => !hasAccess && this.router.navigate([next.data.redirect || this.config.redirect]))
       );
