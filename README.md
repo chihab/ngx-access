@@ -202,7 +202,7 @@ import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
             component: ProfileComponent,
             canActivate: [AccessGuard],
             data: {
-               expression: 'User.Profile:Read'
+               accesses: ['User.Profile:Read', 'User.Profile:Update']
             }
          }
       ])
