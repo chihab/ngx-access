@@ -1,7 +1,7 @@
 <div align="center">
   <h2>🔑 ngx-access 🔑</h2>
   <br />
-  Add access control to your components using hierarchical configuration.
+  Add access control to your components using hierarchical configuration with logical expressions.
   <br /><br />
 
   [![Npm version](https://badge.fury.io/js/ngx-access.svg)](https://npmjs.org/package/ngx-access)
