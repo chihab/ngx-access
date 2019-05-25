@@ -1,32 +1,17 @@
 import { from, Observable, of } from 'rxjs';
 import { map, mergeMap, reduce } from 'rxjs/operators';
 import { flatten } from './flatten';
+import { operator } from './operator.rx';
+import { parser, TokenType } from './parser';
+
 
 export type HasAccessStrategy = (accessName: string) => Observable<boolean>;
-
-interface Access {
-  operator: Operator;
-  list: Array<string>;
-}
-
-type AccessType = string | Access;
-
-enum Operator {
-  AND = 'AND',
-  OR = 'OR'
-}
 
 let configurationAccess = {};
 let hasAccessStrategy: HasAccessStrategy = () => of(false);
 
 export function setConfigurationAccess(config) {
-  function parse(expression: string) {
-    return {
-      list: expression.split(' AND '),
-      operator: Operator.AND
-    };
-  }
-  configurationAccess = flatten(config, { parse, group: true });
+  configurationAccess = flatten(config, { parse: parser, group: true });
 }
 
 export function setHasAccessStrategy(accessTest: HasAccessStrategy) {
@@ -57,7 +42,10 @@ function can(path: string): Observable<boolean> {
   try {
     const access = configurationAccess[path];
     if (!!access) {
-      return testAccess(Array.from(access));
+      return from(access)
+        .pipe(
+          operator(tree => nodeEvaluator(tree, hasAccessStrategy), TokenType.BINARY_OR)
+        )
     }
     console.error(`Undefined path ${path}`);
     return of(false);
@@ -67,25 +55,30 @@ function can(path: string): Observable<boolean> {
   }
 }
 
-function testAccessReducer(
-  access: Array<AccessType>,
-  op: Operator,
-  predicate: (a: boolean, v: boolean) => boolean,
-  init: boolean
-): Observable<boolean> {
-  return from(access as Array<AccessType>)
-    .pipe(
-      mergeMap(currentAccess => testAccess(currentAccess, op)),
-      reduce(predicate, init)
-    );
-}
+function nodeEvaluator(tree, literalEvaluator): Observable<boolean> {
+  if (tree.isLeaf()) {
+    return literalEvaluator(tree.getLiteralValue());
+  }
 
-function testAccess(access: AccessType | Array<AccessType>, op = Operator.OR): Observable<boolean> {
-  return Array.isArray(access)
-    ? (op === Operator.AND)
-      ? testAccessReducer(access, op, (acc, value) => acc && value, true)
-      : testAccessReducer(access, op, (acc, value) => acc || value, false)
-    : typeof access === 'string'
-      ? hasAccessStrategy(access)
-      : testAccess(access.list, access.operator);
-}
+  if (tree.op === TokenType.OP_NOT) {
+    return of(tree.left)
+      .pipe(
+        operator(tree => nodeEvaluator(tree, literalEvaluator), TokenType.OP_NOT)
+      )
+  }
+
+  if (tree.op === TokenType.BINARY_OR) {
+    return from([tree.left, tree.right])
+      .pipe(
+        operator(tree => nodeEvaluator(tree, literalEvaluator), TokenType.BINARY_OR)
+      )
+  }
+
+  if (tree.op === TokenType.BINARY_AND) {
+    return from([tree.left, tree.right])
+      .pipe(
+        operator(tree => nodeEvaluator(tree, literalEvaluator), TokenType.BINARY_AND)
+      )
+  }
+};
+

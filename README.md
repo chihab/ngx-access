@@ -242,9 +242,9 @@ export class MainComponent {
 |---|---|---|
 |  Single |  ```"Access1"``` |  true if user  has Access1 |
 |  Array |  ```["Access1", "Access2"]``` |  true if user has Access1 **OR** Access2|
-|  And |  ```"Access1 AND Access2"``` |  true if user has Access1 **AND** Access2. |
-| Or [WIP] |  ```"Access1 OR Access2"```  |  true if user has Access1 **OR** Access2 || 
-| And/Or [WIP] |  ```"Access1 AND (Access2 OR Access3)"``` |  true if user has Access1 **AND** (Access2 **OR** Access3) |
+|  & |  ```"Access1 & Access2"``` |  true if user has Access1 **AND** Access2. |
+| \| |  ```"Access1 | Access2"```  |  true if user has Access1 **OR** Access2 || 
+| &/\| |  ```"Access1 & (Access2 | Access3)"``` |  true if user has Access1 **AND** (Access2 **OR** Access3) |
 
 #### Example
 ```json
@@ -252,8 +252,8 @@ export class MainComponent {
   "Home": {
     "Notifications": {
        "Read": "
-          CanReadNotifications AND 
-          (CanReadUpdateNotifications OR CanReadDeleteNotifications OR CanReadCreateNotifications)
+          CanReadNotifications & 
+          (CanReadUpdateNotifications | CanReadDeleteNotifications | CanReadCreateNotifications)
         "
     }
   }
@@ -270,7 +270,7 @@ export class MainComponent {
 ```
 
 #### Behavior
-Link is displayed only if user has ```CanReadNotifications``` access **AND** at least one of ```CanReadUpdateNotifications OR CanReadDeleteNotifications OR CanReadCreateNotifications``` accesses.
+Link is displayed only if user has ```CanReadNotifications``` access **AND** at least one of ```CanReadUpdateNotifications``` **OR** ```CanReadDeleteNotifications``` **OR** ```CanReadCreateNotifications``` accesses.
 
 ## External access configuration
 
@@ -323,7 +323,11 @@ import accesses from './path/to/access.json';
 })
 ```
 
+# Credits
+[LEP](https://github.com/NimitzDEV/logical-expression-parser) by [NimitzDEV](https://github.com/NimitzDEV)
+
 # License
 MIT © [Chihab Otmani](mailto:chihab@gmail.com)
+
 
 

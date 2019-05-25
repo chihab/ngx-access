@@ -57,11 +57,12 @@ describe('AccessHelpers', () => {
         }
       }
     });
-    canExpression('Resource.SubResource1:Read').subscribe(_ => {
-      expect(hasAccessStrategy).toHaveBeenCalledWith('ReadAccess1');
-      expect(hasAccessStrategy).toHaveBeenCalledWith('ReadAccess2');
-      done();
-    });
+    canExpression('Resource.SubResource1:Read')
+      .subscribe(_ => {
+        expect(hasAccessStrategy).toHaveBeenCalledWith('ReadAccess1');
+        expect(hasAccessStrategy).toHaveBeenCalledWith('ReadAccess2');
+        done();
+      });
   });
 
   it('should call access strategy with simple string access', (done: DoneFn) => {
@@ -169,31 +170,92 @@ describe('AccessHelpers', () => {
       });
   });
 
-  xit('should evaluate expression with AND operator and parenthesis', (done: DoneFn) => {
+
+  it('should evaluate expression with no operators', (done: DoneFn) => {
     setConfigurationAccess({
       View: {
-        Resource1: {
-          Read: 'Read1 OR Read2'
-        },
-        Resource2: {
-          Read: 'ReadResource2 AND (Read3 OR Read4)'
-        }        
+        Resource0: {
+          Read: 'Read3'
+        }
       }
     });
     hasAccessStrategy.and.callFake((access) => {
-      const userAccesses = ['ReadAccess', 'Read3'];
-      return of(
-        userAccesses.findIndex(a => a === access) !== -1
-      );
+      const userAccesses = ['ReadResource2', 'Read3'];
+      return of(userAccesses.findIndex(a => a === access) !== -1);
+    });
+    canExpression('View:Read')
+      .subscribe(value => {
+        expect(value).toBe(true);
+        expect(hasAccessStrategy).toHaveBeenCalledWith('Read3');
+        done();
+      });
+  });
+
+  it('should evaluate expression with ! operator', (done: DoneFn) => {
+    setConfigurationAccess({
+      View: {
+        Resource0: {
+          Read: '!Visitor'
+        }
+      }
+    });
+    hasAccessStrategy.and.callFake((access) => {
+      const userAccesses = ['Visitor'];
+      return of(userAccesses.findIndex(a => a === access) !== -1);
+    });
+    canExpression('View:Read')
+      .subscribe(value => {
+        expect(value).toBe(false);
+        expect(hasAccessStrategy).toHaveBeenCalledWith('Visitor');
+        done();
+      });
+  });
+
+  it('should evaluate expression with & operator and parenthesis', (done: DoneFn) => {
+    setConfigurationAccess({
+      View: {
+        Resource1: {
+          Read: 'Read1 | Read2'
+        }
+      }
+    });
+    hasAccessStrategy.and.callFake((access) => {
+      console.log('Evaluating access with ' + access);
+      const userAccesses = ['ReadResource2', 'Read3'];
+      return of(userAccesses.findIndex(a => a === access) !== -1);
+    });
+    canExpression('View:Read')
+      .subscribe(value => {
+        expect(value).toBe(false);
+        expect(hasAccessStrategy).toHaveBeenCalledWith('Read1');
+        expect(hasAccessStrategy).toHaveBeenCalledWith('Read2');
+        done();
+      });
+  });
+
+  it('should evaluate expression with &, | operators and parenthesis', (done: DoneFn) => {
+    setConfigurationAccess({
+      View: {
+        Resource1: {
+          Read: '(Read1 | Read2) & Read3'
+        },
+        Resource2: {
+          Read: 'ReadResource2'
+        }
+      }
+    });
+    hasAccessStrategy.and.callFake((access) => {
+      console.log('Evaluating access with ' + access);
+      const userAccesses = ['ReadResource2', 'Read3'];
+      return of(userAccesses.findIndex(a => a === access) !== -1);
     });
     canExpression('View:Read')
       .subscribe(value => {
         expect(value).toBe(true);
         expect(hasAccessStrategy).toHaveBeenCalledWith('Read1');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Read2');
+        expect(hasAccessStrategy).not.toHaveBeenCalledWith('Read2');
+        expect(hasAccessStrategy).not.toHaveBeenCalledWith('Read3');
         expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource2');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Read3');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Read4');        
         done();
       });
   });
