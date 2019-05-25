@@ -28,7 +28,7 @@ export function flatten(config, { parse = v => v, group = false } = {}) {
         });
       }
     } else {
-      const expression = parse(value);
+      const expression = parse(value.replace(/\s/g, ''));
       setConfig(getPath(path, ':', prop), expression);
       accesses = accesses.concat({ action: expression, prop });
     }
@@ -43,6 +43,5 @@ export function flatten(config, { parse = v => v, group = false } = {}) {
   }
 
   children(config);
-  console.log(flatConfig);
   return flatConfig;
 }
