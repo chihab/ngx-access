@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ACCESS_CONFIG } from '../config';
-import { canExpression, setConfigurationAccess, setHasAccessStrategy } from '../helpers/access-helpers';
+import { canAccessPaths, setConfigurationAccess, setHasAccessStrategy, canAccessExpression } from '../helpers/access-helpers';
 import { AccessStrategy } from './access-strategy.service';
 
 @Injectable({
@@ -14,8 +14,12 @@ export class AccessService {
     setConfigurationAccess(config.accesses || {});
   }
 
-  can(accessExpression: string | Array<string>): Observable<boolean> {
-    return canExpression(accessExpression);
+  can(accessPaths: string | Array<string>): Observable<boolean> {
+    return canAccessPaths(accessPaths);
+  }
+
+  canExpression(accessExpression: string): Observable<boolean> {
+    return canAccessExpression(accessExpression);
   }
 
 }

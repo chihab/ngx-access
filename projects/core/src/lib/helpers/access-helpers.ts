@@ -1,5 +1,5 @@
 import { from, Observable, of } from 'rxjs';
-import { map, mergeMap, reduce } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 import { flatten } from './flatten';
 import { operator } from './operator.rx';
 import { parser, TokenType } from './parser';
@@ -26,19 +26,27 @@ export function parse(expression) {
   };
 }
 
-export function canExpression(accessExpression: string | Array<string>): Observable<boolean> {
-  const access = Array.isArray(accessExpression)
-    ? accessExpression
-    : [accessExpression];
-  return from(access)
+export function canAccessExpression(accessExpression: string) {
+  return of(accessExpression)
     .pipe(
-      map(a => a.replace(/\s/g, '')),
-      mergeMap(a => can(a)),
-      reduce((acc, value) => acc || value, false)
+      map(ae => ae.replace(/\s/g, '')),
+      switchMap(ae => nodeEvaluator(parser(ae), hasAccessStrategy)),
     );
 }
 
-function can(path: string): Observable<boolean> {
+
+export function canAccessPaths(accessPath: string | Array<string>): Observable<boolean> {
+  const access = Array.isArray(accessPath)
+    ? accessPath
+    : [accessPath];
+  return from(access)
+    .pipe(
+      map(ap => ap.replace(/\s/g, '')),
+      operator(ap => canAccessPath(ap), TokenType.BINARY_OR)
+    );
+}
+
+function canAccessPath(path: string): Observable<boolean> {
   try {
     const access = configurationAccess[path];
     if (!!access) {
@@ -57,6 +65,7 @@ function can(path: string): Observable<boolean> {
 
 function nodeEvaluator(tree, literalEvaluator): Observable<boolean> {
   if (tree.isLeaf()) {
+    console.log('Evaluating with ' + tree.getLiteralValue());
     return literalEvaluator(tree.getLiteralValue());
   }
 

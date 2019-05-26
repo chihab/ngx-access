@@ -1,44 +1,63 @@
 import TokenType from './token-type';
 
 const PolishNotation = tokens => {
-  const queue = [];
+  let queue = [];
   const stack = [];
+  let subQueue = [];
+  let subStack = [];
+
   tokens.forEach(token => {
     switch (token.type) {
       case TokenType.LITERAL:
-        queue.unshift(token);
+      case TokenType.OP_NOT:
+        if (subStack.length) {
+          subQueue.push(token)
+        }
+        else {
+          queue.push(token);
+        }
         break;
       case TokenType.BINARY_AND:
       case TokenType.BINARY_OR:
-      case TokenType.OP_NOT:
+        if (subStack.length) {
+          subStack.unshift(token);
+        }
+        else {
+          stack.unshift(token);
+        }
+        break;
       case TokenType.PAR_OPEN:
-        stack.push(token);
+        subStack.unshift(token);
         break;
       case TokenType.PAR_CLOSE:
         while (
-          stack.length &&
-          stack[stack.length - 1].type !== TokenType.PAR_OPEN
+          subStack.length &&
+          subStack[subStack.length - 1].type !== TokenType.PAR_OPEN
         ) {
-          queue.unshift(stack.pop());
+          subQueue.unshift(subStack.pop());
         }
 
-        stack.pop();
+        subStack.pop();
 
-        if (stack.length && stack[stack.length - 1].type === TokenType.OP_NOT) {
-          queue.unshift(stack.pop());
+        if (subStack.length && subStack[subStack.length - 1].type === TokenType.OP_NOT) {
+          subQueue.unshift(subStack.pop());
         }
+        queue = queue.concat([...subStack, ...subQueue]);
+        subStack = [];
+        subQueue = [];
         break;
       default:
         break;
     }
+    // debugger;
   });
 
-  const result = (stack.length && [...stack.reverse(), ...queue.reverse()]) || queue;
+  const result = (stack.length && [...stack, ...queue]) || queue;
 
   return result;
 };
 
-const PolishGenerator = function*(polish) {
+const PolishGenerator = function* (polish) {
   for (let index = 0; index < polish.length - 1; index++) {
     yield polish[index];
   }

@@ -1,2 +1,6 @@
 <h1> Inside Lazy Component </h1>
-<div *ngxAccess="'User.Hello.View:Read'"> Hello World </div>
+<div *ngxAccess="'User.Hello.View:Read'; else unauthorized"> Hello World </div>
+
+<ng-template #unauthorized>
+  Unauthorized Access
+</ng-template>

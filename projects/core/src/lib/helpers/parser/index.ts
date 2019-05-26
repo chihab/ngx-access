@@ -4,7 +4,7 @@ import { make, nodeEvaluator } from './node';
 import TokenType from './token-type';
 
 const parser = (exp) => {
-  const tokens = Tokenizer(exp);
+  const tokens = Tokenizer(exp.replace(/\s/g, ''));
   const polish = PolishNotation(tokens);
   const gen = PolishGenerator(polish);
   const tree = make(gen);

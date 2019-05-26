@@ -11,15 +11,23 @@
 # Benefits of ngx-access
 
 * No more endless "ngIf statements" in your components
-* Do not add useless accesses for your Route/Layout components
 * Define your access control as logical expressions
+* Not need to add useless accesses for your Route/Layout components
 * Centralize your access control configuration
-* Document your application security
-* Define your own strategy to verify if the user has a given access
+* Document your application access control policy
+* Provide your own reactive strategy to verify if the user has a given access
 
 # In a nutshell
 
-#### Access control configuration
+#### Access Expression Usage
+```html
+<input type="password" *ngxAccessExpression="'CanUpdateAll | (CanUpdateUser & CanUpdateUserPassword)'" />
+```
+```input``` element is displayed only if user has ```CanUpdateAll``` access **or** both ```CanUpdateUser``` **and** ```CanUpdateUserEmail``` accesses.
+
+If user has  ```CanUpdateAll``` access, ```CanUpdateUser``` and ```CanUpdateUserEmail``` **will not be** evaluated.
+
+#### Access configuration Usage
 
 ```json
 {
@@ -42,13 +50,12 @@
   }
 }
 ```
-#### Component template
+
 ```html
 <app-user-form *ngxAccess="'Home.Main.User : Update'"></app-user-form>
 ```
 
-#### Behavior
-```app-user-form``` component is displayed only if user has at least one of the ```Update``` accesses defined in the ```Home.Main.User``` access path hierarchy, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress``` accesses.
+```app-user-form``` component is displayed only if the user has at least one of the ```Update``` accesses defined in the ```Home.Main.User``` access path hierarchy, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress``` accesses.
 
 # Demo
 
@@ -70,11 +77,12 @@ import { AccessStrategy } from 'ngx-access';
 @Injectable()
 export class TrueAccessStrategy implements AccessStrategy {
   /**
-  * called method over each matched access
+  * called method over matched access in the access expression
   * example: has("CanUpdateUserEmail")
   **/
   has(access: string): Observable<boolean> {
-    // return this.authService.getUserAccesses().some(userAccess => userAccess === access)
+    // return this.authService.getUserAccesses()
+    //    .some(userAccess => userAccess === access)
     return of(true);
   }
 }
