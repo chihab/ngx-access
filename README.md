@@ -12,7 +12,7 @@
 
 * No more endless "ngIf statements" in your components
 * Define your access control as logical expressions
-* Not need to add useless accesses for your Route/Layout components
+* No need to add useless accesses for your Route/Layout components
 * Centralize your access control configuration
 * Document your application access control policy
 * Provide your own reactive strategy to verify if the user has a given access
@@ -21,13 +21,13 @@
 
 #### Access Expression Usage
 ```html
-<input type="password" *ngxAccessExpression="'CanUpdateAll | (CanUpdateUser & CanUpdateUserPassword)'" />
+<input *ngxAccessExpr="'CanUpdateAll | (CanUpdateUser & CanUpdateUserPassword)'" type="password" />
 ```
 ```input``` element is displayed only if user has ```CanUpdateAll``` access **or** both ```CanUpdateUser``` **and** ```CanUpdateUserEmail``` accesses.
 
 If user has  ```CanUpdateAll``` access, ```CanUpdateUser``` and ```CanUpdateUserEmail``` **will not be** evaluated.
 
-#### Access configuration Usage
+#### Access Configuration Usage
 
 ```json
 {
@@ -118,7 +118,10 @@ const accesses = {
    imports: [
       AccessModule.forRoot({
          accesses,
-         strategy: { provide: AccessStrategy, useClass: TrueAccessStrategy }
+         strategy: { 
+           provide: AccessStrategy, 
+           useClass: TrueAccessStrategy 
+        }
       })
    ]
    ...
@@ -131,9 +134,9 @@ export class AppModule { }
 ### Simple usage
 
 ```html
-<app-user-form *ngxAccess="'Home.Main.User:Update'" [user]="user"></app-user-form>
+<app-user-form *ngxAccess="'Home.Main.User:Update'"></app-user-form>
 
-<app-user-form *ngxAccess="'Home.Main.User:Update'; else unauthorized" [user]="user"></app-user-form>
+<app-user-form *ngxAccess="'Home.Main.User:Update'; else unauthorized"></app-user-form>
 
 <ng-template #unauthorized>
   You do not have enough permissions to update user info
@@ -147,10 +150,10 @@ export class AppModule { }
 
 ### Router Links
 ```html
-<a href="" [routerLink]="['view', user.id]" *ngxAccess="'Home.Main.User:Read'">
+<a href="" *ngxAccess="'Home.Main.User:Read'" [routerLink]="[...]" >
     View User
 </a>
-<a href="" [routerLink]="['edit', user.id]" *ngxAccess="'Home.Main.User:Update'">
+<a href="" *ngxAccess="'Home.Main.User:Update'" [routerLink]="[...]" >
     Edit User
 </a>
 ```
@@ -160,18 +163,18 @@ export class AppModule { }
 #### Repeat access path
 ```html
 <div>
-    <input *ngxAccess="'Main.User.Email:Update'" [(ngModel)]="user.email"></span>
-    <input *ngxAccess="'Main.User.Password:Update'" [(ngModel)]="user.password"></span>
-    <app-address *ngxAccess="'Main.User.Address:Update'" [(ngModel)]="user.address"></app-address>
+  <input *ngxAccess="'Main.User.Email:Update'" [(ngModel)]="user.email"></span>
+  <input *ngxAccess="'Main.User.Password:Update'" [(ngModel)]="user.password"></span>
+  <app-address *ngxAccess="'Main.User.Address:Update'" [(ngModel)]="user.address"></app-address>
 </div>
 ```
 
 #### DRY version
 ```html
 <div ngxAccess="Main.User:Update">
-    <input *ngxAccess="'$.Email'" [(ngModel)]="user.email"></span>
-    <input *ngxAccess="'$.Password'" [(ngModel)]="user.password"></span>
-    <app-address *ngxAccess="'$.Address'" [(ngModel)]="user.address"></app-address>
+  <input *ngxAccess="'$.Email'" [(ngModel)]="user.email"></span>
+  <input *ngxAccess="'$.Password'" [(ngModel)]="user.password"></span>
+  <app-address *ngxAccess="'$.Address'" [(ngModel)]="user.address"></app-address>
 </div>
 ```
 
@@ -246,10 +249,10 @@ export class MainComponent {
 
 ## Configuration
 
+#### Access Expression
+
 | Type  |  Description | Evaluation  |
 |---|---|---|
-|  Single |  ```"Access1"``` |  true if user  has Access1 |
-|  Array |  ```["Access1", "Access2"]``` |  true if user has Access1 **OR** Access2|
 |  & |  ```"Access1 & Access2"``` |  true if user has Access1 **AND** Access2. |
 | \| |  ```"Access1 | Access2"```  |  true if user has Access1 **OR** Access2 || 
 | &/\| |  ```"Access1 & (Access2 | Access3)"``` |  true if user has Access1 **AND** (Access2 **OR** Access3) |
@@ -271,7 +274,7 @@ export class MainComponent {
 #### Usage
 ```html
 <navbar>
-  <a href="" routerLink="/notifications" *ngxAccess="'Home.Notifications:Read'">
+  <a href="" *ngxAccess="'Home.Notifications:Read'" routerLink="/notifications" >
       Display Notifications
   </a>
 </navbar>
