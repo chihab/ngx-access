@@ -5,13 +5,14 @@ import { RouterModule } from '@angular/router';
 import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
 import { AppComponent } from './app.component';
 import { MainComponent } from './main/main.component';
-import { MyAccessStrategy } from './my-access-strategy.service';
+import { MyAccessStrategy } from './core/my-access-strategy.service';
 import { ProfileComponent } from './profile/profile.component';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
+import { UserComponent } from './user/user.component';
 
 @NgModule({
    declarations: [
-      AppComponent, ProfileComponent, MainComponent, UnauthorizedComponent
+      AppComponent, ProfileComponent, MainComponent, UnauthorizedComponent, UserComponent
    ],
    imports: [
       AccessModule.forRoot({
