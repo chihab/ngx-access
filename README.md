@@ -57,11 +57,6 @@ If user has  ```CanUpdateAll``` access, ```CanUpdateUser``` and ```CanUpdateUser
 
 ```app-user-form``` component is displayed only if the user has at least one of the ```Update``` accesses defined in the ```Home.Main.User``` access path hierarchy, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress``` accesses.
 
-# Demo
-
-* https://stackblitz.com/github/chihab/ngx-access
-
-
 # Getting Started
 
 #### Install ngx-access
@@ -238,7 +233,11 @@ export class MainComponent {
 
   submit() {
     let formData = {};
-    if (this.accessService.hasAccess('User.Profile:Update')) {
+    if (this.accessService.can('User.Profile:Update')) {
+      // Populate formData...
+    }
+
+    if (this.accessService.canExpression('User.Profile:Update')) {
       // Populate formData...
     }
     ...
@@ -254,8 +253,8 @@ export class MainComponent {
 | Type  |  Description | Evaluation  |
 |---|---|---|
 |  & |  ```"Access1 & Access2"``` |  true if user has Access1 **AND** Access2. |
-| \| |  ```"Access1 | Access2"```  |  true if user has Access1 **OR** Access2 || 
-| &/\| |  ```"Access1 & (Access2 | Access3)"``` |  true if user has Access1 **AND** (Access2 **OR** Access3) |
+| \| |  ```"Access1 | Access2"```  |  true if user has Access1 **OR** Access2 | 
+| &/\| |  ```"Access1 & (Access2 | Access3)"``` |  true if user has Access1 |**AND** (Access2 **OR** Access3) |
 
 #### Example
 ```json
@@ -339,6 +338,4 @@ import accesses from './path/to/access.json';
 
 # License
 MIT © [Chihab Otmani](mailto:chihab@gmail.com)
-
-
 
