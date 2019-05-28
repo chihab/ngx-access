@@ -252,9 +252,9 @@ export class MainComponent {
 
 | Type  |  Description | Evaluation  |
 |---|---|---|
-|  & |  ```"Access1 & Access2"``` |  true if user has Access1 **AND** Access2. |
-| \| |  ```"Access1 | Access2"```  |  true if user has Access1 **OR** Access2 | 
-| &/\| |  ```"Access1 & (Access2 | Access3)"``` |  true if user has Access1 |**AND** (Access2 **OR** Access3) |
+|  & |  ```Access1 & Access2``` |  true if user has Access1 **AND** Access2. |
+| \| |  ```Access1 \| Access2```  |  true if user has Access1 **OR** Access2 | 
+| &/\| |  ```Access1 & (Access2 \| Access3)``` |  true if user has Access1 |**AND** (Access2 **OR** Access3) |
 
 #### Example
 ```json
