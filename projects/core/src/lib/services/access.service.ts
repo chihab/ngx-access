@@ -10,7 +10,7 @@ import { AccessStrategy } from './access-strategy.service';
 export class AccessService {
 
   constructor(@Inject(ACCESS_CONFIG) config, accessStrategy: AccessStrategy) {
-    setHasAccessStrategy(accessName => accessStrategy.has(accessName));
+    setHasAccessStrategy(accessName => accessStrategy.has(accessName), config.reactive);
     setConfigurationAccess(config.accesses || {});
   }
 

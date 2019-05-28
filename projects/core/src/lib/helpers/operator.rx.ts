@@ -20,7 +20,7 @@ export const operator = (evaluator$, op) => (source) => {
 
     source.
       pipe(
-        switchMap(evaluator$),
+        switchMap(access => evaluator$(access).pipe(take(1))),
         takeUntil(finish$)
       )
       .subscribe(

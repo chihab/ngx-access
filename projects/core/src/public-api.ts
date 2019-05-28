@@ -13,6 +13,7 @@ export interface AccessModuleConfig {
   accesses?: any;
   redirect?: string;
   strategy?: Provider;
+  reactive?: boolean;
 }
 
 @NgModule({
@@ -29,6 +30,7 @@ export class AccessModule {
           useValue: {
             accesses: config.accesses || {},
             redirect: config.redirect || '/unauthorized',
+            reactive: !!config.reactive
           }
         },
         config.strategy || {

@@ -1,13 +1,22 @@
 import { canAccessPaths, canAccessExpression, setConfigurationAccess, setHasAccessStrategy } from './access-helpers';
-import { of } from 'rxjs';
+import { of, BehaviorSubject } from 'rxjs';
 
 describe('AccessHelpers', () => {
   let hasAccessStrategy;
-
   beforeEach(() => {
     hasAccessStrategy = jasmine.createSpy();
     setHasAccessStrategy(hasAccessStrategy);
     hasAccessStrategy.and.returnValue(of(false));
+  });
+
+  it('should react to access event without blocking', (done: DoneFn) => {
+    hasAccessStrategy.and.returnValue(new BehaviorSubject(false));
+    canAccessExpression('CanRead&CanWrite')
+      .subscribe(value => {
+        expect(value).toBe(false);
+        expect(hasAccessStrategy).toHaveBeenCalledWith('CanRead');
+        done();
+      });
   });
 
   it('should evaluate access expression', (done: DoneFn) => {

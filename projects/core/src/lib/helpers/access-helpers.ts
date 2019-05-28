@@ -1,4 +1,4 @@
-import { from, Observable, of } from 'rxjs';
+import { from, Observable, of, zip } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { flatten } from './flatten';
 import { operator } from './operator.rx';
@@ -9,13 +9,15 @@ export type HasAccessStrategy = (accessName: string) => Observable<boolean>;
 
 let configurationAccess = {};
 let hasAccessStrategy: HasAccessStrategy = () => of(false);
+let reactive = false;
 
 export function setConfigurationAccess(config) {
   configurationAccess = flatten(config, { parse: parser, group: true });
 }
 
-export function setHasAccessStrategy(accessTest: HasAccessStrategy) {
+export function setHasAccessStrategy(accessTest: HasAccessStrategy, isReactive = false) {
   hasAccessStrategy = accessTest;
+  reactive = isReactive;
 }
 
 export function parse(expression) {
@@ -29,11 +31,12 @@ export function parse(expression) {
 export function canAccessExpression(accessExpression: string) {
   return of(accessExpression)
     .pipe(
-      map(ae => ae.replace(/\s/g, '')),
-      switchMap(ae => nodeEvaluator(parser(ae), hasAccessStrategy)),
+      switchMap(ae => reactive
+        ? reactiveNodeEvaluator(parser(ae), hasAccessStrategy)
+        : nodeEvaluator(parser(ae), hasAccessStrategy)
+      )
     );
 }
-
 
 export function canAccessPaths(accessPath: string | Array<string>): Observable<boolean> {
   const access = Array.isArray(accessPath)
@@ -63,9 +66,35 @@ function canAccessPath(path: string): Observable<boolean> {
   }
 }
 
+function reactiveNodeEvaluator(tree, literalEvaluator): Observable<boolean> {
+  if (tree.isLeaf()) {
+    return literalEvaluator(tree.getLiteralValue())
+  }
+
+  if (tree.op === TokenType.OP_NOT) {
+    return reactiveNodeEvaluator(tree.left, literalEvaluator)
+      .pipe(
+        map(value => !value)
+      )
+  }
+
+  if (tree.op === TokenType.BINARY_OR) {
+    return zip(
+      reactiveNodeEvaluator(tree.left, literalEvaluator),
+      reactiveNodeEvaluator(tree.right, literalEvaluator),
+      (left, right) => left || right)
+  }
+
+  if (tree.op === TokenType.BINARY_AND) {
+    return zip(
+      reactiveNodeEvaluator(tree.left, literalEvaluator),
+      reactiveNodeEvaluator(tree.right, literalEvaluator),
+      (left, right) => left && right)
+  }
+};
+
 function nodeEvaluator(tree, literalEvaluator): Observable<boolean> {
   if (tree.isLeaf()) {
-    console.log('Evaluating with ' + tree.getLiteralValue());
     return literalEvaluator(tree.getLiteralValue());
   }
 

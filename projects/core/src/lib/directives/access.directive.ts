@@ -1,8 +1,8 @@
-import { Directive, Input, OnInit, TemplateRef, ViewContainerRef, Optional, SkipSelf, Host, AfterViewInit } from '@angular/core';
+import { Directive, Input, OnInit, TemplateRef, ViewContainerRef, Optional, SkipSelf, Host, EmbeddedViewRef } from '@angular/core';
 import { AccessService } from '../services/access.service';
 import { parse } from '../helpers/access-helpers';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, distinctUntilChanged } from 'rxjs/operators';
 
 @Directive({
   selector: '[ngxAccess]'
@@ -11,6 +11,8 @@ export class AccessDirective implements OnInit {
   @Input() ngxAccess: string | Array<string>;
   @Input() ngxAccessElse: TemplateRef<any>;
   onDestroy$ = new Subject<void>();
+
+  private viewRef: EmbeddedViewRef<any>;
 
   constructor(@Optional() private template: TemplateRef<any>,
     private viewContainer: ViewContainerRef,
@@ -35,13 +37,21 @@ export class AccessDirective implements OnInit {
         }
       }
       this.accessService.can(ngxAccess)
-        .pipe(takeUntil(this.onDestroy$))
+        .pipe(
+          distinctUntilChanged(),
+          takeUntil(this.onDestroy$)
+        )
         .subscribe(
-          access => access
-            ? this.viewContainer.createEmbeddedView(this.template)
-            : this.ngxAccessElse
-              ? this.viewContainer.createEmbeddedView(this.ngxAccessElse)
-              : null
+          access => {
+            if (this.viewRef) {
+              this.viewContainer.remove(this.viewContainer.indexOf(this.viewRef));
+            }
+            this.viewRef = access
+              ? this.viewContainer.createEmbeddedView(this.template)
+              : this.ngxAccessElse
+                ? this.viewContainer.createEmbeddedView(this.ngxAccessElse)
+                : null
+          }
         );
     }
   }

@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { AccessService } from './access.service';
 import { ACCESS_CONFIG } from '../config';
+import { AccessService } from './access.service';
 
 @Injectable({
   providedIn: 'root'

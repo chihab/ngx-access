@@ -27,7 +27,8 @@ import { UserComponent } from './user/user.component';
             }
          },
          redirect: '/forbidden',
-         strategy: { provide: AccessStrategy, useClass: MyAccessStrategy }
+         strategy: { provide: AccessStrategy, useClass: MyAccessStrategy },
+         reactive: true
       }),
       RouterModule.forRoot([
          { path: '', component: MainComponent },
