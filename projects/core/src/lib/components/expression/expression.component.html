@@ -1,0 +1,13 @@
+<span class="expression" [ngClass]="{visible: visible, hidden: !visible}" [satPopoverAnchorFor]="contactPopover"
+  (click)="contactPopover.open(); expr.focus()" (mouseleave)="contactPopover.close()">Edit</span>
+<ng-content></ng-content>
+
+<sat-popover #contactPopover>
+  <input type="text" [value]="expression" #expr (keyup.enter)="onExpression.emit(expr.value)" />
+  {{visible ? 'Visible': 'Hidden'}}
+</sat-popover>
+
+<!-- <div class="expression2">
+  <span class="edit icon">x</span>
+  <ng-content></ng-content>
+</div> -->

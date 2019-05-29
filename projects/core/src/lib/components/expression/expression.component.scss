@@ -1,0 +1,58 @@
+.expression {
+  border: solid 1px darkblue;
+  padding: 10px;
+  max-width: 100%;
+}
+
+input {
+  border: 0;
+  padding: 20px;
+  font-size: 16px;
+  color: white;
+  background: transparent;
+  border: none;
+}
+
+input:focus{
+  outline: none;
+}
+
+.hidden {
+  background-color: lightcoral;
+}
+
+.visible {
+  background-color: lightgreen;
+}
+
+:host > div {
+  border: black solid 1px;
+  padding: 15px;
+  //margin-top: 5px;
+  &.highlighted {
+    border: blue solid 1px;
+  }
+  margin-bottom: 5px;
+  //&.DG, &.BUDGDG, &.DG {
+  //  border-color: red;
+  //  margin-right: 5px;
+  //}
+  span {
+    float: right;
+    display: flex;
+    align-items: center;
+    padding-right: 3px;
+    &.icon {
+      font-size: 24px;
+      color: black;
+      &.edit {
+        cursor: pointer;
+        width: 20px;
+        &:hover {
+          color: blue;
+        }
+      }
+    }
+  }
+}
+

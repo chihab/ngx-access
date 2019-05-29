@@ -1,27 +1,29 @@
 <!-- <div *ngxAccess="'UserForm.FirstName : Read'; else unauthorized"> Hello World </div> -->
 
-<h3>Static Expression</h3>
-<div *ngxAccessExpr="'CanWrite&CanRead'; else noWriteAccess">
-  Component with CanWrite&CanRead access
+<div *ngxAccessConf="'Component1'; else missingAccess">
+  Component 1
 </div>
-<ng-template #noWriteAccess>
+
+<hr />
+
+<label *ngxAccessConf="'Component1'; else missingAccess" >
+  Name
+  <input type="text" />
+</label>
+<hr />
+
+<div *ngxAccessConf="'Component2'; else missingAccess">
+  Component 2
+</div>
+
+<ng-template #missingAccess>
   <div style="color: red">
-    User doesn't have CanWrite&CanRead access
+    User doesn't have access
   </div>
 </ng-template>
 
 <hr />
 
-<h3>Dynamic Expression</h3>
-<input type="text" value="CanWrite&CanRead" #expr /> <button (click)="expression=expr.value">Evaluate</button>
-<ng-container *ngIf="expression">
-  <div *ngxAccessExpr="expression; else missingAccess">
-    Component with {{expression}} access
-  </div>
-</ng-container>
-
-<ng-template #missingAccess>
-  <div style="color: red">
-    User doesn't have {{expression}} access
-  </div>
-</ng-template>
+Debug <input type="checkbox" (click)="debug(check.checked)" [checked]="debug$|async" #check />
+<h3>Configuration</h3>
+{{accesses | json}}

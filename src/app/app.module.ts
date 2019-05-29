@@ -9,11 +9,13 @@ import { MyAccessStrategy } from './core/my-access-strategy.service';
 import { ProfileComponent } from './profile/profile.component';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 import { UserComponent } from './user/user.component';
+import { AccessExpressionComponent } from './access-expression/access-expression.component';
 
 @NgModule({
    declarations: [
-      AppComponent, ProfileComponent, MainComponent, UnauthorizedComponent, UserComponent
+      AppComponent, ProfileComponent, MainComponent, UnauthorizedComponent, UserComponent, AccessExpressionComponent
    ],
+   entryComponents: [AccessExpressionComponent],
    imports: [
       AccessModule.forRoot({
          accesses: {
@@ -26,6 +28,7 @@ import { UserComponent } from './user/user.component';
                }
             }
          },
+         expressionComponent: AccessExpressionComponent,
          redirect: '/forbidden',
          strategy: { provide: AccessStrategy, useClass: MyAccessStrategy },
          reactive: true
