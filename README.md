@@ -19,15 +19,33 @@
 
 # In a nutshell
 
-#### Access Expression Usage
+## 1. Define the access control strategy
+```ts
+import { AccessStrategy } from 'ngx-access';
+
+@Injectable()
+export class TrueAccessStrategy implements AccessStrategy {
+  /**
+   * access: access could be 'Admin' role or 'CanUpdateProfile permission or whatever suits you.
+   **/
+  has(access: string): Observable<boolean> {
+    // Use your local state, local storage, http endpoint...
+    return of(true);
+  }
+}
+```
+
+You're up to decide what an access does mean and how to control whether a user has it or not. 
+
+## 2. Inline Access Expression Usage
 ```html
 <input *ngxAccessExpr="'CanUpdateAll | (CanUpdateUser & CanUpdateUserPassword)'" type="password" />
 ```
 ```input``` element is displayed only if user has ```CanUpdateAll``` access **or** both ```CanUpdateUser``` **and** ```CanUpdateUserEmail``` accesses.
 
-If user has  ```CanUpdateAll``` access, ```CanUpdateUser``` and ```CanUpdateUserEmail``` **will not be** evaluated.
+If user has  ```CanUpdateAll``` access, ```CanUpdateUser``` and ```CanUpdateUserEmail``` **will not be** evaluated. (Except on live mode) 
 
-#### Access Configuration Usage
+## 3. External Access Configuration Usage
 
 ```json
 {
@@ -55,22 +73,25 @@ If user has  ```CanUpdateAll``` access, ```CanUpdateUser``` and ```CanUpdateUser
 <app-user-form *ngxAccess="'Home.Main.User : Update'"></app-user-form>
 ```
 
-```app-user-form``` component is displayed only if the user has at least one of the ```Update``` accesses defined in the ```Home.Main.User``` access path hierarchy, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress``` accesses.
+```app-user-form``` component is displayed only if the user has at least one of the ```Update``` accesses defined in the ```Home.Main.User``` access path hierarchy, namely: ```CanUpdateUserEmail``` **or** ```CanUpdateUserPassword``` **or** ```CanUpdateUserAddress``` accesses.
 
-# Demo
+This prevents you from adding specific accesses (repeating accesses) for parent components of which display depends on their children components.
 
-* https://stackblitz.com/github/chihab/ngx-access
+## 4. Live Edit / Export Access Configuration
 
+You can live edit / simulate component access expressions and then export the resulting access configuration.
+
+See the demo: https://github.com/chihab/ngx-access
 
 # Getting Started
 
-#### Install ngx-access
+## 1. Install ngx-access
 
 ```shell
 npm install --save ngx-access
 ```
 
-#### Define the access control strategy
+## 2. Define the access control strategy
 ```ts
 import { AccessStrategy } from 'ngx-access';
 
@@ -88,7 +109,37 @@ export class TrueAccessStrategy implements AccessStrategy {
 }
 ```
 
-#### Import AccessModule
+## 3. Import/Configure AccessModule
+
+At this step you have to decide wether you'd be inlining the access expression in the template or you'd be centralizing the access control configuration.
+
+### 3.1 Inline Access Expression
+
+```ts
+import { AccessModule } from 'ngx-access';
+
+@NgModule({
+   imports: [
+      AccessModule.forRoot({
+         strategy: { 
+           provide: AccessStrategy, 
+           useClass: TrueAccessStrategy 
+        }
+      })
+   ]
+})
+export class AppModule { }
+```
+```html
+<input *ngxAccessExpr="'CanUpdateAll | (CanUpdateUser & CanUpdateUserPassword)' else unauthorized" type="password" />
+
+<ng-template #unauthorized>
+  You do not have enough permissions to update user info
+</ng-template>
+
+```
+
+### 3.2 External Access configuration
 
 ```ts
 import { AccessGuard, AccessModule } from 'ngx-access';
@@ -110,6 +161,12 @@ const accesses = {
           Update: "CanUpdateUserAddress"
         }
       }
+      "Notifications": {
+       "Read": `
+          CanReadNotifications &
+          (CanReadUpdateNotifications | CanReadDeleteNotifications | CanReadCreateNotifications)
+        `
+      }
     }
   }
 }
@@ -129,9 +186,9 @@ const accesses = {
 export class AppModule { }
 ```
 
-## Usage in template
+##### Usage in template
 
-### Simple usage
+* Simple usage
 
 ```html
 <app-user-form *ngxAccess="'Home.Main.User:Update'"></app-user-form>
@@ -143,12 +200,12 @@ export class AppModule { }
 </ng-template>
 ```
 
-### Multiple Access Paths
+* Multiple Access Paths
 ```html
 <app-home *ngxAccess="['Home.Main:Update', 'Home.Main:Read']"></app-home>
 ```
 
-### Router Links
+* Router Links
 ```html
 <a href="" *ngxAccess="'Home.Main.User:Read'" [routerLink]="[...]" >
     View User
@@ -158,9 +215,9 @@ export class AppModule { }
 </a>
 ```
 
-### Container Component
+* Container Component
 
-#### Repeat access path
+Define absolute access path on each controlled component
 ```html
 <div>
   <input *ngxAccess="'Main.User.Email:Update'" [(ngModel)]="user.email"></span>
@@ -169,7 +226,7 @@ export class AppModule { }
 </div>
 ```
 
-#### DRY version
+Define absolute access path in parent component and relative path on children
 ```html
 <div ngxAccess="Main.User:Update">
   <input *ngxAccess="'$.Email'" [(ngModel)]="user.email"></span>
@@ -178,118 +235,13 @@ export class AppModule { }
 </div>
 ```
 
-#### Explanation
+Explanation
 ``` $``` is replaced by ```Main.User```. 
 
 ``` Update``` is appended to the resulting string.
 
-## Usage in code
-
-### Route guard
-```ts
-import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
-
-@NgModule({
-   imports: [
-      AccessModule.forRoot({
-         accesses: {
-            User: {
-               Profile: {
-                  Read: 'CanAccessUserProfile'
-               },
-               Billing: {
-                  Read: 'CanAccessUserBilling'
-               }
-            }
-         },
-         redirect: '/forbidden',
-         strategy: { provide: AccessStrategy, useClass: MyAccessStrategy }
-      }),
-      RouterModule.forRoot([
-         ...
-         { path: 'forbidden', component: UnauthorizedComponent },
-         {
-            path: 'profile',
-            component: ProfileComponent,
-            canActivate: [AccessGuard],
-            data: {
-               accesses: ['User.Profile:Read', 'User.Profile:Update']
-            }
-         }
-      ])
-   ]
-   ...
-})
-export class AppModule { }
-```
-
-### Component
-```ts
-import { Component, OnInit } from '@angular/core';
-import { AccessService } from 'ngx-access';
-
-@Component({
-  selector: 'app-main',
-  templateUrl: './main.component.html',
-  styleUrls: ['./main.component.css']
-})
-export class MainComponent {
-  constructor(private accessService: AccessService) { }
-
-  submit() {
-    let formData = {};
-    if (this.accessService.can('User.Profile:Update')) {
-      // Populate formData...
-    }
-
-    if (this.accessService.canExpression('User.Profile:Update')) {
-      // Populate formData...
-    }
-    ...
-  }
-
-}  
-```
-
-## Configuration
-
-#### Access Expression
-
-| Type  |  Description | Evaluation  |
-|---|---|---|
-|  & |  ```"Access1 & Access2"``` |  true if user has Access1 **AND** Access2. |
-| \| |  ```"Access1 | Access2"```  |  true if user has Access1 **OR** Access2 | 
-| &/\| |  ```"Access1 & (Access2 | Access3)"``` |  true if user has Access1 |**AND** (Access2 **OR** Access3) |
-
-#### Example
-```json
-{
-  "Home": {
-    "Notifications": {
-       "Read": "
-          CanReadNotifications & 
-          (CanReadUpdateNotifications | CanReadDeleteNotifications | CanReadCreateNotifications)
-        "
-    }
-  }
-}
-```
-
-#### Usage
-```html
-<navbar>
-  <a href="" *ngxAccess="'Home.Notifications:Read'" routerLink="/notifications" >
-      Display Notifications
-  </a>
-</navbar>
-```
-
-#### Behavior
-Link is displayed only if user has ```CanReadNotifications``` access **AND** at least one of ```CanReadUpdateNotifications``` **OR** ```CanReadDeleteNotifications``` **OR** ```CanReadCreateNotifications``` accesses.
-
-## External access configuration
-
-#### 1. Enable JSON imports in tsconfig.json
+#### External access configuration
+* Enable JSON imports in tsconfig.json
 ```json
 {
   ...
@@ -303,7 +255,7 @@ Link is displayed only if user has ```CanReadNotifications``` access **AND** at 
 }
 ```
 
-#### 2. Create ngx-access configuration
+ * Create ngx-access configuration
 ```json
 {
   "Home": {
@@ -323,7 +275,7 @@ Link is displayed only if user has ```CanReadNotifications``` access **AND** at 
 }
 ```
 
-#### 3. Import ngx-access configuration
+* Import ngx-access configuration
 ```ts
 import accesses from './path/to/access.json';
 
@@ -338,8 +290,84 @@ import accesses from './path/to/access.json';
 })
 ```
 
-# Credits
-[LEP](https://github.com/NimitzDEV/logical-expression-parser) by [NimitzDEV](https://github.com/NimitzDEV)
+## Usage in code
+
+### Route guard
+```ts
+import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
+
+@NgModule({
+   imports: [
+      AccessModule.forRoot({
+         accesses
+         redirect: '/forbidden',
+         strategy: { provide: AccessStrategy, useClass: MyAccessStrategy }
+      }),
+      RouterModule.forRoot([
+         ...
+         { path: 'forbidden', component: UnauthorizedComponent },
+         {
+            path: 'profile',
+            component: ProfileComponent,
+            canActivate: [AccessGuard],
+            data: {
+               accesses: ['User.Profile:Read', 'User.Profile:Update']
+            }
+         },
+         {
+            path: 'user',
+            component: UserComponent,
+            canActivate: [AccessGuard],
+            data: {
+               expression: 'ADMIN OR MANAGER'
+            }
+         }         
+      ])
+   ]
+   ...
+})
+export class AppModule { }
+```
+
+### Inject AccessService
+```ts
+import { Component, OnInit } from '@angular/core';
+import { AccessService } from 'ngx-access';
+
+@Component({
+  selector: 'app-main',
+  templateUrl: './main.component.html',
+  styleUrls: ['./main.component.css']
+})
+export class MainComponent {
+  constructor(private accessService: AccessService) { }
+
+  submit() {
+    let formData = {};
+    if (this.accessService.can('User.Profile:Update')) {
+      // Populate formData...
+    }
+
+    if (this.accessService.canExpression('CanUpdateProfile')) {
+      // Populate formData...
+    }
+    ...
+  }
+
+}  
+```
+
+### Shardd Module
+
+```ts
+
+@NgModule({
+   imports: [
+      AccessModule
+   ]
+   ... 
+}) 
+```
 
 # License
 MIT © [Chihab Otmani](mailto:chihab@gmail.com)
