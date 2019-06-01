@@ -2,10 +2,14 @@ export function flatten(config, { parse = v => v, group = false } = {}) {
   const flatConfig = {};
 
   function setConfig(path, value) {
-    if (!flatConfig[path]) {
-      flatConfig[path] = new Set();
+    if (group) {
+      if (!flatConfig[path]) {
+        flatConfig[path] = new Set();
+      }
+      flatConfig[path].add(value);
+    } else {
+      flatConfig[path] = value;
     }
-    flatConfig[path].add(value);
   }
 
   function getPath(path, delimiter, prop) {
@@ -28,9 +32,11 @@ export function flatten(config, { parse = v => v, group = false } = {}) {
         });
       }
     } else {
-      const expression = parse(value.replace(/\s/g, ''));
+      const expression = parse(value);
       setConfig(getPath(path, ':', prop), expression);
-      accesses = accesses.concat({ action: expression, prop });
+      if (group) {
+        accesses = accesses.concat({ action: expression, prop });
+      }
     }
     return accesses;
   }

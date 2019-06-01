@@ -1,6 +1,6 @@
 import Tokenizer from './tokenizer';
 import { PolishNotation, PolishGenerator } from './polish';
-import { make, nodeEvaluator } from './node';
+import { make, ExpNode, nodeEvaluator } from './node';
 import TokenType from './token-type';
 
 const parser = (exp) => {
@@ -11,4 +11,4 @@ const parser = (exp) => {
   return tree;
 };
 
-export { nodeEvaluator, TokenType, parser };
+export { nodeEvaluator, ExpNode, TokenType, parser };

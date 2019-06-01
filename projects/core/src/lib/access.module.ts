@@ -1,43 +1,32 @@
 import { ModuleWithProviders, NgModule, Provider, Type } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { SatPopoverModule } from '@ncstate/sat-popover';
-import { ExpressionComponent } from './components/expression/expression.component';
-import { ACCESS_CONFIG, ACCESS_EXPRESSION_COMPONENT } from './config';
-import { AccessConfigurationDirective } from './directives/access-configuration.directive';
+import { AccessExpressionEditor } from './components/access-expression-editor/access-expression-editor.component';
+import { AccessConfig, ACCESS_CONFIG } from './config';
 import { AccessExpressionDirective } from './directives/access-expression.directive';
 import { AccessDirective } from './directives/access.directive';
 import { AccessStrategy, FakeAccessStrategy } from './services/access-strategy.service';
 
-export interface AccessModuleConfig {
-  accesses?: any;
-  redirect?: string;
-  strategy?: Provider;
-  reactive?: boolean;
-  expressionComponent?: Type<ExpressionComponent>
-}
-
 @NgModule({
   imports: [NoopAnimationsModule, SatPopoverModule],
-  declarations: [AccessDirective, AccessExpressionDirective, AccessConfigurationDirective, ExpressionComponent],
-  exports: [AccessDirective, AccessExpressionDirective, AccessConfigurationDirective, ExpressionComponent],
-  entryComponents: [ExpressionComponent]
+  declarations: [AccessDirective, AccessExpressionDirective, AccessExpressionEditor],
+  exports: [AccessDirective, AccessExpressionDirective, AccessExpressionEditor],
+  entryComponents: [AccessExpressionEditor]
 })
 export class AccessModule {
-  static forRoot(config: AccessModuleConfig): ModuleWithProviders {
+  static forRoot(config: AccessConfig): ModuleWithProviders {
+    const accessConfig: AccessConfig = {
+      accesses: config.accesses || {},
+      reactive: config.reactive || !!config.editor,
+      redirect: config.redirect,
+      editor: config.editor
+    }
     return {
       ngModule: AccessModule,
       providers: [
         {
           provide: ACCESS_CONFIG,
-          useValue: {
-            accesses: config.accesses || {},
-            redirect: config.redirect || '/unauthorized',
-            reactive: !!config.reactive
-          }
-        },
-        {
-          provide: ACCESS_EXPRESSION_COMPONENT,
-          useValue: config.expressionComponent
+          useValue: accessConfig
         },
         config.strategy || {
           provide: AccessStrategy,

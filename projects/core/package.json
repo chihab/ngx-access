@@ -1,7 +1,7 @@
 {
   "name": "ngx-access",
   "version": "1.1.1",
-  "description": "Add access control to your components using hierarchical configuration with logical expressions.",
+  "description": "Simpler and cleaner access control on your application using visually editable logical expressions.",
   "author": "Chihab Otmani",
   "repository": {
     "type": "git",

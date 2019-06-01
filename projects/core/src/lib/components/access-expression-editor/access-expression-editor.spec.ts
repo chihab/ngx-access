@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ExpressionComponent } from './expression.component';
+import { AccessExpressionEditor } from './access-expression-editor.component';
 
-describe('ExpressionComponent', () => {
-  let component: ExpressionComponent;
-  let fixture: ComponentFixture<ExpressionComponent>;
+describe('AccessExpressionEditor', () => {
+  let component: AccessExpressionEditor;
+  let fixture: ComponentFixture<AccessExpressionEditor>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ExpressionComponent ]
+      declarations: [ AccessExpressionEditor ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ExpressionComponent);
+    fixture = TestBed.createComponent(AccessExpressionEditor);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

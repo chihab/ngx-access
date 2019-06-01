@@ -9,29 +9,33 @@ import { MyAccessStrategy } from './core/my-access-strategy.service';
 import { ProfileComponent } from './profile/profile.component';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 import { UserComponent } from './user/user.component';
-import { AccessExpressionComponent } from './access-expression/access-expression.component';
+import { AccessExpressionPanel } from './access-expression/access-expression.component';
+import { environment } from '../environments/environment';
 
 @NgModule({
    declarations: [
-      AppComponent, ProfileComponent, MainComponent, UnauthorizedComponent, UserComponent, AccessExpressionComponent
+      AppComponent, ProfileComponent, MainComponent, UnauthorizedComponent, UserComponent, AccessExpressionPanel
    ],
-   entryComponents: [AccessExpressionComponent],
+   entryComponents: [AccessExpressionPanel],
    imports: [
       AccessModule.forRoot({
          accesses: {
             UserForm: {
                FirstName: {
-                  Read: 'UserAccess'
+                  Read: 'CanRead | CanUpdate | CanWrite',
+                  Write: 'CanWrite'
                },
                Login: {
-                  Read: 'Adminccess'
+                  Read: 'CanRead | CanWrite',
                }
             }
          },
-         expressionComponent: AccessExpressionComponent,
          redirect: '/forbidden',
          strategy: { provide: AccessStrategy, useClass: MyAccessStrategy },
          reactive: true
+         // editor: {
+         //    component: AccessExpressionPanel,
+         // }
       }),
       RouterModule.forRoot([
          { path: '', component: MainComponent },

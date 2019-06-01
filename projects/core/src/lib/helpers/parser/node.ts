@@ -1,6 +1,6 @@
 import TokenType from './token-type';
 
-class ExpNode {
+export class ExpNode {
   constructor(private op, private left, private right?, private literal?) {
   }
 
@@ -32,6 +32,13 @@ class ExpNode {
 
   static CreateLiteral(lit) {
     return new ExpNode(TokenType.LEAF, null, null, lit);
+  }
+
+  // TODO: 
+  static CreateTree(list, type) {
+    return list.length === 1
+      ? list[0]
+      : new ExpNode(type, list[0], list[1])
   }
 }
 

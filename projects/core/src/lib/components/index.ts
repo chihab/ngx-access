@@ -1,1 +1,1 @@
-export * from './expression/expression.component';
+export * from './access-expression-editor/access-expression-editor.component';

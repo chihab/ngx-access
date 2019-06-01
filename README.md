@@ -1,7 +1,7 @@
 <div align="center">
   <h2>🔑 ngx-access 🔑</h2>
   <br />
-  Simpler and cleaner access control on your components using visually editable logical expressions.
+  Simpler and cleaner access control on your application using visually editable logical expressions.
   <br /><br />
 
   [![Npm version](https://badge.fury.io/js/ngx-access.svg)](https://npmjs.org/package/ngx-access)
@@ -192,8 +192,8 @@ const accesses = {
           Update: "CanUpdateUserAddress"
         }
       }
-      "Notifications": {
-        "Read": `
+      Notifications: {
+        Read: `
             CanReadNotifications &
             (CanReadUpdateNotifications | CanReadDeleteNotifications | CanReadCreateNotifications)
           `

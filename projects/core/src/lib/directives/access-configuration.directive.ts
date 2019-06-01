@@ -1,12 +1,10 @@
-import { ComponentFactory, ComponentFactoryResolver, ComponentRef, Type, Directive, EmbeddedViewRef, Injector, Input, OnInit, TemplateRef, ViewContainerRef, Inject, Optional } from '@angular/core';
+import { ComponentFactory, ComponentFactoryResolver, ComponentRef, Directive, EmbeddedViewRef, Host, Inject, Injector, Input, OnInit, Optional, SkipSelf, TemplateRef, ViewContainerRef } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { distinctUntilChanged, takeUntil } from 'rxjs/operators';
-import { ExpressionComponent } from '../components/expression/expression.component';
+import { AccessExpressionEditor } from '../components/access-expression-editor/access-expression-editor.component';
+import { AccessConfig, ACCESS_CONFIG } from '../config';
 import { AccessService } from '../services/access.service';
-import { ACCESS_EXPRESSION_COMPONENT } from '../config';
-
-
-export type Content<T> = string | TemplateRef<T>;
+import { parse } from '../helpers/access-helpers';
 
 @Directive({
   selector: '[ngxAccessConf]'
@@ -22,29 +20,51 @@ export class AccessConfigurationDirective implements OnInit {
   private expressionSubscription: Subscription;
   private subscription: Subscription;
 
-  constructor(private template: TemplateRef<any>,
+  constructor(@Optional() private template: TemplateRef<any>,
     private viewContainer: ViewContainerRef,
     private accessService: AccessService,
     private componentFactoryResolver: ComponentFactoryResolver,
     private injector: Injector,
-    @Optional() @Inject(ACCESS_EXPRESSION_COMPONENT) private AccessExpressionComponent: Type<ExpressionComponent>) {
+    @Optional() @SkipSelf() @Host() private parentAccessDirective: AccessConfigurationDirective,
+    @Optional() @Inject(ACCESS_CONFIG) private accessConfig: AccessConfig) {
   }
 
   ngOnInit() {
-    this.expression = this.accessService.getAccessExpression(this.ngxAccessConf);
-    this.accessService.debug()
-      .pipe(
-        distinctUntilChanged(),
-        takeUntil(this.onDestroy$)
-      )
-      .subscribe(debug => {
-        this.cleanUp();
-        if (debug) {
-          this.checkDebugAccess();
+    let ngxAccessConf = this.ngxAccessConf;
+
+    if (this.parentAccessDirective) {
+      const { path, action } = parse(this.parentAccessDirective.ngxAccessConf);
+      if (this.ngxAccessConf) {
+        if (Array.isArray(this.ngxAccessConf)) {
+          ngxAccessConf = `${this.ngxAccessConf.map(access => access.replace('$', path))}:${action}`;
         } else {
-          this.checkRealAccess();
+          const { path: childPath, action: childAction } = parse(ngxAccessConf);
+          ngxAccessConf = `${childPath.replace('$', path)}:${childAction ? childAction : action}`;
         }
-      })
+      } else {
+        ngxAccessConf = `${path}:${action}`;
+      }
+    }
+
+    this.expression = this.accessService.getAccessExpression(ngxAccessConf);
+
+    if (this.accessConfig.editor) {
+      this.accessService.debug()
+        .pipe(
+          distinctUntilChanged(),
+          takeUntil(this.onDestroy$)
+        )
+        .subscribe(debug => {
+          this.cleanUp();
+          if (debug) {
+            this.checkDebugAccess();
+          } else {
+            this.checkRealAccess();
+          }
+        })
+    } else {
+      this.checkRealAccess();
+    }
   }
 
   private cleanUp() {
@@ -62,25 +82,25 @@ export class AccessConfigurationDirective implements OnInit {
   private checkDebugAccess() {
     this.viewRef = this.viewContainer.createEmbeddedView(this.template);
     const [node] = this.viewRef.rootNodes;
-    const expressionComponent = this.AccessExpressionComponent || ExpressionComponent;
-    let componentFactory: ComponentFactory<ExpressionComponent> = this.componentFactoryResolver.resolveComponentFactory(expressionComponent);
-    this.expressionRef = this.viewContainer.createComponent<ExpressionComponent>(componentFactory, 0, this.injector, [[node]]);
-    let instance = <ExpressionComponent>this.expressionRef.instance;
+    const expressionComponent = this.accessConfig.editor.component || AccessExpressionEditor;
+    let componentFactory: ComponentFactory<AccessExpressionEditor> = this.componentFactoryResolver.resolveComponentFactory(expressionComponent);
+    this.expressionRef = this.viewContainer.createComponent<AccessExpressionEditor>(componentFactory, 0, this.injector, [[node]]);
+    let instance = <AccessExpressionEditor>this.expressionRef.instance;
     instance.expression = this.expression;
     this.expressionSubscription = instance.onExpression.subscribe((expression) => {
       this.expression = expression;
       this.accessService.setAccessExpression(this.ngxAccessConf, this.expression);
-      this.checkAccess(access => instance.visible = access);
+      this.checkAccess(canAccess => instance.canAccess = canAccess);
     });
-    this.checkAccess(access => instance.visible = access);
+    this.checkAccess(canAccess => instance.canAccess = canAccess);
   }
 
   private checkRealAccess() {
-    this.checkAccess((access) => {
+    this.checkAccess((canAccess) => {
       if (this.viewRef) {
         this.viewContainer.remove(this.viewContainer.indexOf(this.viewRef));
       }
-      if (access) {
+      if (canAccess) {
         this.viewRef = this.viewContainer.createEmbeddedView(this.template);
       }
       else if (this.ngxAccessConfElse) {

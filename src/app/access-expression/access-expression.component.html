@@ -1,6 +1,6 @@
 <div>
   <input type="text" [value]="expression" #expr (keyup.enter)="onExpression.emit(expr.value)" />
-  {{visible ? 'Visible': 'Hidden'}}
+  {{canAccess ? 'Visible': 'Hidden'}}
 </div>
 <ng-content></ng-content>
 
