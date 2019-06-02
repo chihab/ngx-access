@@ -14,7 +14,7 @@ export class MainComponent implements OnInit {
   constructor(private accessService: AccessService) { }
 
   ngOnInit() {
-    this.accesses = this.accessService.getConfiguration();
+    this.accesses = this.accessService.getAccessConfiguration();
     this.debug$ = this.accessService.debug();
   }
 

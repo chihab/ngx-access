@@ -1,23 +1,27 @@
 import { from, Observable, of, zip } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { flatten } from './flatten';
 import { operator } from './operator.rx';
-import { parser, ExpNode, TokenType } from './parser';
-
+import { ExpNode, parser, TokenType } from './parser';
 
 export type HasAccessStrategy = (accessName: string) => Observable<boolean>;
 
-let configurationAccess = {};
+let accessConfiguration = {};
 let hasAccessStrategy: HasAccessStrategy = () => of(false);
 let reactive = false;
 
-export function setConfigurationAccess(config) {
-  configurationAccess = flatten(config, { parse: parser, group: true });
+export function setAccessConfiguration(_accessConfiguration, config = {}) {
+  accessConfiguration = flatten(_accessConfiguration, { parse: parser, group: true, ...config });
+  console.log(accessConfiguration);
 }
 
 export function setHasAccessStrategy(_hasAccessStrategy: HasAccessStrategy, _reactive = false) {
   hasAccessStrategy = _hasAccessStrategy;
   reactive = _reactive;
+}
+
+export function getAccessConfiguration() {
+  return accessConfiguration;
 }
 
 export function parse(expression) {
@@ -28,11 +32,14 @@ export function parse(expression) {
   };
 }
 
-export function getAccessExpression(accessPath: string) {
-  console.log(accessPath);
-  console.log(configurationAccess);
-  return configurationAccess[accessPath];
+export function getAccessExpression(accessKey: string) {
+  return accessConfiguration[accessKey];
 }
+
+export function setAccessExpression(accessKey: string, accessExpression: string) {
+  accessConfiguration[accessKey] = accessExpression;
+}
+
 
 export function canAccessExpression(accessExpression: string) {
   return reactive
@@ -40,13 +47,13 @@ export function canAccessExpression(accessExpression: string) {
     : nodeEvaluator(parser(accessExpression), hasAccessStrategy);
 }
 
-export function canAccessPaths(accessPath: string | Array<string>): Observable<boolean> {
+export function canAccessConfiguration(accessConfiguration: string | Array<string>): Observable<boolean> {
   try {
-    const evaluatedExpressions = (Array.isArray(accessPath)
-      ? accessPath
-      : [accessPath])
+    const evaluatedExpressions = (Array.isArray(accessConfiguration)
+      ? accessConfiguration
+      : [accessConfiguration])
       .reduce((acc, ap) => {
-        return acc.concat(Array.from(configurationAccess[ap]))
+        return acc.concat(Array.from(accessConfiguration[ap]))
       }, [])
     return reactive
       ? reactiveNodeEvaluator(ExpNode.CreateTree(evaluatedExpressions, TokenType.BINARY_OR), hasAccessStrategy)

@@ -162,7 +162,7 @@ import { AccessModule } from 'ngx-access';
 export class AppModule { }
 ```
 ```html
-<input *ngxAccessExpr="'CanUpdateAll | (CanUpdateUser & CanUpdateUserPassword)'; else unauthorized" type="password" />
+<input *ngxAccessExpr="'CanUpdateAll | (CanUpdateUser & CanUpdateUserPassword)'; else unauthorized" />
 
 <ng-template #unauthorized>
   You do not have enough permissions to update user info

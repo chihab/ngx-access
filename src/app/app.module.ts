@@ -3,14 +3,13 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
+import { AccessExpressionPanel } from './access-expression/access-expression.component';
 import { AppComponent } from './app.component';
-import { MainComponent } from './main/main.component';
 import { MyAccessStrategy } from './core/my-access-strategy.service';
+import { MainComponent } from './main/main.component';
 import { ProfileComponent } from './profile/profile.component';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 import { UserComponent } from './user/user.component';
-import { AccessExpressionPanel } from './access-expression/access-expression.component';
-import { environment } from '../environments/environment';
 
 @NgModule({
    declarations: [
@@ -22,7 +21,7 @@ import { environment } from '../environments/environment';
          accesses: {
             UserForm: {
                FirstName: {
-                  Read: 'CanRead | CanUpdate | CanWrite',
+                  Read: 'CanRead & CanWrite',
                   Write: 'CanWrite'
                },
                Login: {

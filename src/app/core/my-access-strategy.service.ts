@@ -11,7 +11,7 @@ export class MyAccessStrategy implements AccessStrategy {
     return this.userService.getPermissions()
       .pipe(
         map(permissions => permissions.some(permission => permission === access)),
-        tap(console.log)
+        // tap(canAccess => console.log('From strategy ' + canAccess))
       );
   }
 }

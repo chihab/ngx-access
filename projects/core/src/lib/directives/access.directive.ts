@@ -1,6 +1,6 @@
 import { ComponentFactory, ComponentFactoryResolver, ComponentRef, Directive, EmbeddedViewRef, Host, Inject, Injector, Input, OnInit, Optional, SkipSelf, TemplateRef, ViewContainerRef } from '@angular/core';
-import { Subject, Subscription } from 'rxjs';
-import { distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { Observable, from, Subject, Subscription } from 'rxjs';
+import { distinctUntilChanged, scan, takeUntil, filter } from 'rxjs/operators';
 import { AccessExpressionEditor } from '../components/access-expression-editor/access-expression-editor.component';
 import { AccessConfig, ACCESS_CONFIG } from '../config';
 import { AccessService } from '../services/access.service';
@@ -16,7 +16,8 @@ export class AccessDirective implements OnInit {
 
   private ngxAccessPath: string;
   private expression: string;
-  
+  private childern$: Array<{ key: string, child$: Observable<boolean>/*, subscription?: Subscription*/ }> = [];
+
   private viewRef: EmbeddedViewRef<any>;
   private expressionRef: ComponentRef<any>;
   private expressionSubscription: Subscription;
@@ -47,22 +48,25 @@ export class AccessDirective implements OnInit {
       }
     }
     this.ngxAccessPath = ngxAccess;
-    
+
     if (this.accessConfig.editor) {
+      // this.expression = Array.from(this.accessService.getAccessExpression(ngxAccess)).map(expr => `(${expr})`).join('|');
       this.expression = this.accessService.getAccessExpression(ngxAccess);
-      this.accessService.debug()
-        .pipe(
-          distinctUntilChanged(),
-          takeUntil(this.onDestroy$)
-        )
-        .subscribe(debug => {
-          this.cleanUp();
-          if (debug) {
-            this.checkDebugAccess();
-          } else {
-            this.checkRealAccess();
-          }
-        })
+      if (this.expression) {
+        this.accessService.debug()
+          .pipe(
+            distinctUntilChanged(),
+            takeUntil(this.onDestroy$)
+          )
+          .subscribe(debug => {
+            this.cleanUp();
+            if (debug) {
+              this.checkDebugAccess();
+            } else {
+              this.checkRealAccess();
+            }
+          })
+      }
     } else {
       this.checkRealAccess();
     }
@@ -88,12 +92,20 @@ export class AccessDirective implements OnInit {
     this.expressionRef = this.viewContainer.createComponent<AccessExpressionEditor>(componentFactory, 0, this.injector, [[node]]);
     let instance = <AccessExpressionEditor>this.expressionRef.instance;
     instance.expression = this.expression;
-    this.expressionSubscription = instance.onExpression.subscribe((expression) => {
-      console.log('Update view (debug) please....');
-      this.expression = expression;
-      this.accessService.setAccessExpression(this.ngxAccess, this.expression);
-      this.checkAccess(canAccess => instance.canAccess = canAccess);
-    });
+    if (this.expressionSubscription) {
+      this.expressionSubscription.unsubscribe();
+    }
+    this.expressionSubscription = instance.onExpression
+      .pipe(
+        filter(AccessExpression => !!AccessExpression),
+        distinctUntilChanged()
+      )
+      .subscribe((expression) => {
+        console.log('Update view (debug) please....');
+        this.expression = expression;
+        this.accessService.setAccessExpression(this.ngxAccess, this.expression);
+        this.checkAccess(canAccess => instance.canAccess = canAccess);
+      });
     this.checkAccess(canAccess => instance.canAccess = canAccess);
   }
 
@@ -115,15 +127,37 @@ export class AccessDirective implements OnInit {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
-    const checkAccess$ = this.expression 
+
+    const checkAccess$: Observable<boolean> = this.expression
       ? this.accessService.canExpression(this.expression)
       : this.accessService.can(this.ngxAccessPath);
+
+    if (this.parentAccessDirective) {
+      this.parentAccessDirective.observe(this.ngxAccess, checkAccess$);
+    }
+
     this.subscription = checkAccess$
       .pipe(
         distinctUntilChanged(),
         takeUntil(this.onDestroy$)
       )
       .subscribe(onExpression);
+  }
+
+  observe(key: string, child$: Observable<boolean>) {
+    if (this.subscription) {
+      this.subscription.unsubscribe(); // Will unsbscribe from all children
+    }
+    const child = this.childern$.find(child => child.key === key);
+    if (child) {
+      child.child$ = child$;
+    } else {
+      this.childern$.push({ key, child$ });
+    }
+    this.subscription = from(this.childern$.map(child => child.child$))
+      .pipe(scan((acc, childAccess) => acc || childAccess))
+      .subscribe(canAccess => console.log('Can access parent ' + canAccess))
+    console.log('Updateing zip subscription on parent considering my ' + this.childern$.length + ' children');
   }
 
   ngOnDestroy(): void {

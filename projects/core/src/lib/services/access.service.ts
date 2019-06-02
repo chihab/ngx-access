@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { AccessConfig, ACCESS_CONFIG } from '../config';
-import { canAccessExpression, canAccessPaths, getAccessExpression, setConfigurationAccess, setHasAccessStrategy } from '../helpers/access-helpers';
+import { canAccessExpression, canAccessConfiguration, getAccessExpression, setAccessConfiguration, setAccessExpression, getAccessConfiguration, setHasAccessStrategy } from '../helpers/access-helpers';
 import { AccessStrategy } from './access-strategy.service';
 
 @Injectable({
@@ -9,21 +9,18 @@ import { AccessStrategy } from './access-strategy.service';
 })
 export class AccessService {
 
-  private debugSubject: BehaviorSubject<boolean>;
+  private debugSubject$: BehaviorSubject<boolean>;
   private debug$: Observable<boolean>;
-  // private accesses;
 
   constructor(@Inject(ACCESS_CONFIG) config: AccessConfig, accessStrategy: AccessStrategy) {
     setHasAccessStrategy(accessName => accessStrategy.has(accessName), config.reactive);
-    setConfigurationAccess(config.accesses || {});
-    // this.accesses = flatten(config.accesses) ;
-    // this.accesses = config.accesses ;
-    this.debugSubject = new BehaviorSubject<boolean>(true);
-    this.debug$ = this.debugSubject.asObservable();
+    setAccessConfiguration(config.accesses || {}/*, {parse: v => v, group: false}*/);
+    this.debugSubject$ = new BehaviorSubject<boolean>(true);
+    this.debug$ = this.debugSubject$.asObservable();
   }
 
-  can(accessPaths: string | Array<string>): Observable<boolean> {
-    return canAccessPaths(accessPaths);
+  can(accessConfigurations: string | Array<string>): Observable<boolean> {
+    return canAccessConfiguration(accessConfigurations);
   }
 
   canExpression(accessExpression: string): Observable<boolean> {
@@ -31,19 +28,19 @@ export class AccessService {
   }
 
   setAccessExpression(accessKey: string, accessExpression: string) {
-    // this.accesses[accessKey] = accessExpression;
+    setAccessExpression(accessKey, accessExpression);
   }
 
   getAccessExpression(accessKey: string) {
     return getAccessExpression(accessKey);
   }
 
-  getConfiguration() {
-    return {}; // this.accesses;
+  getAccessConfiguration() {
+    return getAccessConfiguration();
   }
 
   setDebug(debug: boolean) {
-    this.debugSubject.next(debug);
+    this.debugSubject$.next(debug);
   }
 
   debug(): Observable<boolean> {
