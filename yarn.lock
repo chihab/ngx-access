@@ -2909,9 +2909,9 @@ fsevents@^1.2.2, fsevents@^1.2.7:
     node-pre-gyp "^0.12.0"
 
 fstream@^1.0.0, fstream@^1.0.2:
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/fstream/-/fstream-1.0.11.tgz#5c1fb1f117477114f0632a0eb4b71b3cb0fd3171"
-  integrity sha1-XB+x8RdHcRTwYyoOtLcbPLD9MXE=
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/fstream/-/fstream-1.0.12.tgz#4e8ba8ee2d48be4f7d0de505455548eae5932045"
+  integrity sha512-WvJ193OHa0GHPEL+AycEJgxvBEwyfRkN1vhjca23OaPVMCaLCXTd5qAu82AjTcgP1UJmytkOKb63Ypde7raDIg==
   dependencies:
     graceful-fs "^4.1.2"
     inherits "~2.0.0"
@@ -4745,6 +4745,13 @@ ng-packagr@^4.2.0:
     stylus "^0.54.5"
     uglify-js "^3.0.7"
     update-notifier "^2.3.0"
+
+ngx-access@~1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/ngx-access/-/ngx-access-1.1.2.tgz#264f59dba4cf1797f1f215d0c13e6ce4991ef15a"
+  integrity sha512-Za7WRY9vgjvJ6KXzgOA007z89pU2NW8JxKwEHbKbfpj2SNybt/mAcEX4/G2ZRUa7YYPryleluW9WPYG+iY+NeA==
+  dependencies:
+    tslib "^1.9.0"
 
 nice-try@^1.0.4:
   version "1.0.5"
