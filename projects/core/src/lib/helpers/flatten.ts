@@ -1,53 +1,52 @@
-export function flatten(config, { parse = v => v, group = false } = {}) {
-  const flatConfig = {};
-
-  function setConfig(path, value) {
-    if (group) {
-      if (!flatConfig[path]) {
-        flatConfig[path] = new Set();
-      }
-      flatConfig[path].add(value);
-    } else {
-      flatConfig[path] = value;
-    }
-  }
-
+export function flatten(tree, nodeEvaluator, leafEvaluator) {
+  const ROOT = '__root';
   function getPath(path, delimiter, prop) {
-    return path
+    return path && path != ROOT
       ? path + delimiter + prop
       : prop;
   }
-
-  function visitor(accesses, prop, value, path) {
-    if (Array.isArray(value)) {
-      value.forEach(access => {
-        visitor(accesses, prop, access, path);
-      });
-    } else if (typeof value === 'object') {
-      const childrenAccesses = children(value, getPath(path, '.', prop));
-      if (group) {
-        accesses = accesses.concat(childrenAccesses);
-        accesses.forEach(access => {
-          setConfig(getPath(path, ':', access.prop), access.action);
-        });
-      }
+  function arrayPush(arr, value) {
+    if (!arr)
+      arr = [];
+    arr.push(value);
+    return arr;
+  }
+  function visitor(node, path = '', key = '') {
+    if (typeof node === 'object') {
+      const nodePath = getPath(path, '.', key);
+      return Object.keys(node)
+        .reduce((_acc, _key) => {
+          const childPath = getPath(nodePath, '.', _key);
+          const childNode = visitor(node[_key], nodePath, _key);
+          if (childNode.__type === 'LEAF') {
+            console.log(_key + ' ===> ' + childNode.__value);
+            _acc[_key] = leafEvaluator(childNode.__value);
+            return _acc;
+          }
+          return Object.keys(childNode)
+            .filter(__action => __action !== '__type')
+            .reduce((__acc, __key) => {
+              if (__key === '__flat') {
+                __acc.__flat = { ...__acc.__flat, ...childNode.__flat };
+              }
+              else {
+                const __path = getPath(childPath, ':', __key)
+                __acc[__key] = arrayPush(__acc[__key], __path);
+                if (Array.isArray(childNode[__key])) {
+                  __acc.__flat[__path] = nodeEvaluator(__acc.__flat, childNode[__key]);
+                } else {
+                  __acc.__flat[__path] = childNode[__key];
+                }
+              }
+              return __acc;
+            }, _acc)
+        }, { __flat: {}, __type: 'NODE' })
     } else {
-      const expression = parse(value);
-      setConfig(getPath(path, ':', prop), expression);
-      if (group) {
-        accesses = accesses.concat({ action: expression, prop });
-      }
+      const __value = node;
+      return {
+        __value, __type: 'LEAF', __flat: { [getPath(path, ':', key)]: __value }
+      };
     }
-    return accesses;
   }
-
-  function children(obj, path = '') {
-    return Object.keys(obj)
-      .reduce(
-        (accesses, prop) => visitor(accesses, prop, obj[prop], path), []
-      );
-  }
-
-  children(config);
-  return flatConfig;
+  return visitor({ [ROOT]: tree }).__flat;
 }
