@@ -1,6 +1,6 @@
+import { combineLatest, from, Observable, of, Subject } from 'rxjs';
+import { map, mergeMap, reduce, scan, switchMap, take, tap } from 'rxjs/operators';
 import { flatten } from './flatten';
-import { BehaviorSubject, Subject, of, from } from 'rxjs';
-import { scan, reduce, tap, switchMap, take, distinctUntilChanged, startWith } from 'rxjs/operators';
 
 describe('Flatten Library', () => {
 
@@ -71,7 +71,7 @@ describe('Flatten Library', () => {
     }
 
     const nodeEvaluator = (flatChildren, children: Array<boolean | string>) => {
-      console.log('Node Evaluator: ', children)
+      // console.log('Node Evaluator: ', children)
       const evaluation = from(children)
         .pipe(
           tap(console.log),
@@ -88,7 +88,7 @@ describe('Flatten Library', () => {
     }
 
     const leafEvaluator = (value: string) => {
-      console.log('Leaf Evaluator: ', value)
+      // console.log('Leaf Evaluator: ', value)
       return canAccess(value).pipe(take(1));
     }
 
@@ -139,53 +139,63 @@ describe('Flatten Library', () => {
 
   fdescribe('should evaluate access configuration reactively', () => {
 
-    const canAccess = (access: string) => {
-      const userAccesses = ['CanWriteFirstName', 'CanExport'];
-      const evaluation = userAccesses.some(_access => _access === access);
-      return of(evaluation).pipe(
-        tap(v => console.log(access + ' evaluated to ' + v))
-      );
+    function nextTick(cb) {
+      // setTimeout(cb);
+      Promise.resolve()
+        .then(cb)
     }
 
-    const nodeEvaluator = (flatChildren, children) => {
-      console.log('Node Evaluator: ', children)
-      const evaluation$ = from(children)
+    const evaluate = (flatChildren, key): Observable<boolean> => {
+      const node = flatChildren[key];
+      if (node.hasOwnProperty('input$')) {
+        nextTick(_ => node.input$.next());
+        return node.output$;
+      }
+      else {
+        return node;
+      }
+    }
+
+    const node$ = (flatChildren, children) => {
+      const children$ = children.map(
+        child => of(child)
+          .pipe(
+            mergeMap(node => evaluate(flatChildren, node))
+          ),
+      );
+      const evaluation$ = combineLatest(...children$)
         .pipe(
-          switchMap(child => {
-            if (typeof child === "string") {
-              // console.log(child, flatChildren[child]);
-              flatChildren[child].input.next();
-              return flatChildren[child].output;
-            }
-            else {
-              return child;
-            }
-          }),
-          scan((acc, curr) => {
-            console.log('Value ' + curr);
-            return acc || curr
-          }, false)
+          map((evaluates: boolean[]) => evaluates.findIndex(_evaluate => _evaluate) !== -1)
         );
       return evaluation$;
     }
 
-    const leafEvaluator = (access: string) => {
-      console.log('Leaf Evaluator: ', access)
-      const input$ = new Subject();
-      const output$ = new Subject();
-      input$
-        .subscribe(newAccess => {
-          console.log('New value ', newAccess, access);
-          output$.next(newAccess ? newAccess : access);
-        });
+    const leaf$ = (access: string) => {
+      // console.log('Leaf Evaluator: ', access)
+      let input$;
+      const output$ = new Subject<boolean>();
+
+      function waitInput(access) {
+        input$ = new Subject<string>();
+        input$
+          .pipe(
+            // tap(_access => console.log (_access, _access ? 'Do not notify parent' : 'Notify parent' )),
+            switchMap(_access => canAccess(_access || access))
+          )
+          .subscribe(hasAccess => {
+            output$.next(hasAccess);
+          });
+      }
+      waitInput(access);
+
       return {
-        input: input$,
-        output: output$.pipe(
-          // switchMap(canAccess),
-          tap(_ => {
-            console.log('Waiting for data....')
-          })
-        )
+        update: (access) => {
+          // input$.complete();
+          // waitInput(access);
+          input$.next(access)
+        },
+        input$,
+        output$: output$.asObservable()
       }
     }
 
@@ -215,39 +225,51 @@ describe('Flatten Library', () => {
         Read: 'CanReadProfile'
       },
       Export: 'CanExport'
-    }, nodeEvaluator, leafEvaluator);
+    }, node$, leaf$);
 
-    console.log(flattened);
+    const canAccess = (access: string) => {
+      const userAccesses = ['CanWriteFirstName', 'CanReadAll'];
+      const evaluation = userAccesses.some(_access => _access === access);
+      return of(evaluation).pipe(
+        tap(v => console.log(access + ' evaluated to ' + v))
+      );
+    }
 
     function test(key, expected) {
       return (done) => {
-        flattened[key].output.subscribe(value => {
+        evaluate(flattened, key).subscribe(value => {
           expect(value).toBe(expected);
           done();
         })
       }
     }
 
-    // it('Main.UserForm.FirstName:Write', test('Main.UserForm.FirstName:Write', true));
-    // it('Main.UserForm:Write', test('Main.UserForm:Write', true));
-    // it('Main:Write', test('Main:Write', true));
-    // it('Main:Read', test('Main:Read', false));
+    it('Main.UserForm.FirstName:Write', test('Main.UserForm.FirstName:Write', true));
+    it('Main.UserForm:Write', test('Main.UserForm:Write', true));
+    it('Main:Write', test('Main:Write', true));
+    it('Main:Read', test('Main:Read', false));
 
-    // it('Emit expression to evaluate', (done) => {
-    // const key = 'Main.UserForm.FirstName:Write';
-    // flattened[key].output.subscribe(value => {
-    //   expect(value).toBe(true);
-    //   done();
-    // })
-    // flattened[key].input.next('CanExport');
+    // fit('Update to failing access', (done) => {
+    //   // flattened['Main.UserForm.FirstName:Write'].update('CanWriteAll');
+    //   evaluate(flattened, 'Main.UserForm.FirstName:Write').subscribe(value => {
+    //     expect(value).toBe(true);
+    //     done();
+    //   })
     // })
 
-    it('Emit expression to evaluate', (done) => {
-      const key = 'Main.UserForm:Read';
-      flattened[key].subscribe(value => {
-        expect(value).toBe(true);
-        done();
+    fit('Update to successfull access', (done) => {
+      evaluate(flattened, 'Main.UserForm:Read').subscribe(value => {
+        console.log('Access evaluation Main.UserForm:Read ' + value);
+        // expect(value).toBe(false);
+        // done();
       })
+      evaluate(flattened, 'Main.UserForm.FirstName:Read').subscribe(value => {
+        console.log('Access evaluation Main.UserForm.FirstName:Read ' + value);
+      //   // expect(value).toBe(true);
+      })
+      // setTimeout(() => flattened['Main.UserForm.FirstName:Read'].update('CanReadAll'));
+
+      setTimeout(done, 2000)
     })
 
   });
