@@ -33,10 +33,10 @@ describe('Access Directive', () => {
           accesses: {
             Resource: {
               Child1: {
-                Create: 'CanAccess'
+                Create: 'CanCreateChild1'
               },
               Child2: {
-                Create: 'CanAccess'
+                Create: 'CanCreateChild2'
               }
             }
           },

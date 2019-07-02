@@ -32,7 +32,7 @@ export function flatten(tree, nodeEvaluator, leafEvaluator) {
                 const __path = getPath(childPath, ':', __key)
                 __acc[__key] = arrayPush(__acc[__key], __path);
                 if (Array.isArray(childNode[__key])) {
-                  __acc.__flat[__path] = nodeEvaluator(__acc.__flat, childNode[__key]);
+                  __acc.__flat[__path] = nodeEvaluator(childNode[__key]);
                 } else {
                   __acc.__flat[__path] = childNode[__key];
                 }

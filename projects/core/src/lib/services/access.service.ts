@@ -19,7 +19,7 @@ export class AccessService {
     this.debug$ = this.debugSubject$.asObservable();
   }
 
-  can(accessConfigurations: string | Array<string>): Observable<boolean> {
+  can(accessConfigurations: string): Observable<boolean> {
     return canAccessConfiguration(accessConfigurations);
   }
 

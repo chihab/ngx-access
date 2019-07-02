@@ -137,7 +137,7 @@ describe('Flatten Library', () => {
   });
 
 
-  fdescribe('should evaluate access configuration reactively', () => {
+  describe('should evaluate access configuration reactively', () => {
 
     function nextTick(cb) {
       // setTimeout(cb);
@@ -257,7 +257,7 @@ describe('Flatten Library', () => {
     //   })
     // })
 
-    fit('Update to successfull access', (done) => {
+    it('Update to successfull access', (done) => {
       evaluate(flattened, 'Main.UserForm:Read').subscribe(value => {
         console.log('Access evaluation Main.UserForm:Read ' + value);
         // expect(value).toBe(false);

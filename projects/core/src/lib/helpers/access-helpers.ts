@@ -1,5 +1,5 @@
-import { from, Observable, of, zip } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { from, Observable, of, zip, combineLatest, Subject } from 'rxjs';
+import { map, mergeMap, switchMap, catchError } from 'rxjs/operators';
 import { flatten } from './flatten';
 import { operator } from './operator.rx';
 import { ExpNode, parser, TokenType } from './parser';
@@ -9,10 +9,69 @@ export type HasAccessStrategy = (accessName: string) => Observable<boolean>;
 let accessConfiguration = {};
 let hasAccessStrategy: HasAccessStrategy = () => of(false);
 let reactive = false;
+let flattened;
 
-export function setAccessConfiguration(_accessConfiguration, config = {}) {
-  accessConfiguration = flatten(_accessConfiguration, { parse: parser, group: true, ...config });
-  console.log(accessConfiguration);
+const evaluate = (key): Observable<boolean> => {
+  function nextTick(cb) {
+    // setTimeout(cb);
+    Promise.resolve()
+      .then(cb)
+  }
+  console.log('Testing access with key ' + key);
+  const node = flattened && flattened[key];
+  if (!node)
+    return of(false);
+  if (node.hasOwnProperty('input$')) {
+    nextTick(_ => node.input$.next());
+    return node.output$;
+  }
+  else {
+    return node;
+  }
+}
+export function setAccessConfiguration(_accessConfiguration) {
+  const node$ = children => {
+    const children$ = children.map(
+      child => of(child)
+        .pipe(
+          mergeMap(node => evaluate(node))
+        ),
+    );
+    const evaluation$ = combineLatest(...children$)
+      .pipe(
+        map((evaluates: boolean[]) => evaluates.findIndex(_evaluate => _evaluate) !== -1)
+      );
+    return evaluation$;
+  }
+  const leaf$ = (access: string) => {
+    let input$;
+    const output$ = new Subject<boolean>();
+
+    function waitInput(access) {
+      input$ = new Subject<string>();
+      input$
+        .pipe(
+          // tap(_access => console.log (_access, _access ? 'Do not notify parent' : 'Notify parent' )),
+          switchMap(_access => canAccessExpression(_access || access))
+        )
+        .subscribe(hasAccess => {
+          output$.next(hasAccess);
+        });
+    }
+    waitInput(access);
+
+    return {
+      update: (access) => {
+        // input$.complete();
+        // waitInput(access);
+        input$.next(access)
+      },
+      input$,
+      output$: output$.asObservable()
+    }
+  }
+  flattened = flatten(_accessConfiguration, node$, leaf$);
+  console.log(flattened);
 }
 
 export function setHasAccessStrategy(_hasAccessStrategy: HasAccessStrategy, _reactive = false) {
@@ -40,31 +99,17 @@ export function setAccessExpression(accessKey: string, accessExpression: string)
   accessConfiguration[accessKey] = accessExpression;
 }
 
-
 export function canAccessExpression(accessExpression: string) {
   return reactive
     ? reactiveNodeEvaluator(parser(accessExpression), hasAccessStrategy)
     : nodeEvaluator(parser(accessExpression), hasAccessStrategy);
 }
 
-export function canAccessConfiguration(accessConfiguration: string | Array<string>): Observable<boolean> {
-  try {
-    const evaluatedExpressions = (Array.isArray(accessConfiguration)
-      ? accessConfiguration
-      : [accessConfiguration])
-      .reduce((acc, ap) => {
-        return acc.concat(Array.from(accessConfiguration[ap]))
-      }, [])
-    return reactive
-      ? reactiveNodeEvaluator(ExpNode.CreateTree(evaluatedExpressions, TokenType.BINARY_OR), hasAccessStrategy)
-      : from(evaluatedExpressions)
-        .pipe(
-          operator(ee => nodeEvaluator(ee, hasAccessStrategy), TokenType.BINARY_OR)
-        );
-  } catch (e) {
-    console.error(e);
-    return of(false);
-  }
+export function canAccessConfiguration(accessPath: string): Observable<boolean> {
+  return evaluate(accessPath)
+    .pipe(
+      catchError(e => of(e))
+    )
 }
 
 function reactiveNodeEvaluator(tree, literalEvaluator): Observable<boolean> {
