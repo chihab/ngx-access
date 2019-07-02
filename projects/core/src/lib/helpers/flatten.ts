@@ -5,12 +5,6 @@ export function flatten(tree, nodeEvaluator, leafEvaluator) {
       ? path + delimiter + prop
       : prop;
   }
-  function arrayPush(arr, value) {
-    if (!arr)
-      arr = [];
-    arr.push(value);
-    return arr;
-  }
   function visitor(node, path = '', key = '') {
     if (typeof node === 'object') {
       const nodePath = getPath(path, '.', key);
@@ -30,21 +24,17 @@ export function flatten(tree, nodeEvaluator, leafEvaluator) {
               }
               else {
                 const __path = getPath(childPath, ':', __key)
-                __acc[__key] = arrayPush(__acc[__key], __path);
-                if (Array.isArray(childNode[__key])) {
-                  __acc.__flat[__path] = nodeEvaluator(__acc.__flat, childNode[__key]);
-                } else {
-                  __acc.__flat[__path] = childNode[__key];
-                }
+                __acc[__key] = (__acc[__key] || []).concat(__path);
+                __acc.__flat[__path] = Array.isArray(childNode[__key])
+                  ? nodeEvaluator(__acc.__flat, childNode[__key])
+                  : childNode[__key]
               }
               return __acc;
             }, _acc)
         }, { __flat: {}, __type: 'NODE' })
-    } else {
-      const __value = node;
-      return {
-        __value, __type: 'LEAF', __flat: { [getPath(path, ':', key)]: __value }
-      };
+    }
+    return {
+      __value: node, __type: 'LEAF', __flat: { [getPath(path, ':', key)]: node }
     }
   }
   return visitor({ [ROOT]: tree }).__flat;
