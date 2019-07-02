@@ -26,7 +26,7 @@ export function flatten(tree, nodeEvaluator, leafEvaluator) {
                 const __path = getPath(childPath, ':', __key)
                 __acc[__key] = (__acc[__key] || []).concat(__path);
                 __acc.__flat[__path] = Array.isArray(childNode[__key])
-                  ? nodeEvaluator(__acc.__flat, childNode[__key])
+                  ? nodeEvaluator(childNode[__key])
                   : childNode[__key]
               }
               return __acc;
@@ -34,7 +34,9 @@ export function flatten(tree, nodeEvaluator, leafEvaluator) {
         }, { __flat: {}, __type: 'NODE' })
     }
     return {
-      __value: node, __type: 'LEAF', __flat: { [getPath(path, ':', key)]: node }
+      __value: node,
+      __type: 'LEAF',
+      __flat: { [getPath(path, ':', key)]: node }
     }
   }
   return visitor({ [ROOT]: tree }).__flat;
