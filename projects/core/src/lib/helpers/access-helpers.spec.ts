@@ -116,13 +116,14 @@ describe('AccessHelpers', () => {
         read: 'ReadAccess',
         create: 'CreateAccess',
         array: 'Access1 | Access2',
-        complex: '(Access1 | Access2) & (Access3 | Access 4)'
+        complex: '(Access1 | Access2) & (Access3 | Access4)'
       }
     });
     canAccessConfiguration('Resource:complex').subscribe(_ => {
       expect(hasAccessStrategy).not.toHaveBeenCalledWith('OtherAccess');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access1');
-      expect(hasAccessStrategy).toHaveBeenCalledWith('Access4');
+      expect(hasAccessStrategy).toHaveBeenCalledWith('Access2');
+      expect(hasAccessStrategy).not.toHaveBeenCalledWith('Access4');
       expect(hasAccessStrategy).not.toHaveBeenCalledWith('Access5');
       done();
     });

@@ -1,6 +1,6 @@
 import { Observable, of } from 'rxjs';
 import { Component } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { AccessModule } from '../../public-api';
 import { AccessStrategy } from '../services/access-strategy.service';
@@ -21,6 +21,7 @@ class SubComponent {
 
 export class MyAccessStrategy implements AccessStrategy {
   has(access: string): Observable<boolean> {
+    console.log('Testing access ' + access);
     return of(true);
   }
 }
@@ -56,21 +57,23 @@ describe('Access Directive', () => {
     expect(de).not.toBeNull();
   });
 
-  it('should not create element when access not configured', () => {
+  it('should not create element when access not configured', fakeAsync(() => {
     TestBed.overrideTemplate(TestComponent, `<div *ngxAccess="'Something'"></div>`);
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
     fixture.detectChanges();
+    tick();
     const de = fixture.debugElement.query(By.css('div'));
     expect(de).toBeNull();
-  });
+  }));
 
-  it('should create element when access configured and allowed', () => {
+  it('should create element when access configured and allowed', fakeAsync(() => {
     TestBed.overrideTemplate(TestComponent, `<div *ngxAccess="'Resource:Create'"></div>`);
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
     fixture.detectChanges();
+    tick();
     const de = fixture.debugElement.query(By.css('div'));
     expect(de).not.toBeNull();
-  });
+  }));
 
   it('should create component from else template when access not given', () => {
     TestBed.overrideTemplate(TestComponent, `
@@ -83,7 +86,7 @@ describe('Access Directive', () => {
     expect(fixture.debugElement.query(By.css('span'))).not.toBeNull();
   });
 
-  it('should deduce path from parent component directive', () => {
+  it('should deduce path from parent component directive', fakeAsync(() => {
     TestBed.overrideTemplate(TestComponent, `
       <h2> Parent Component </h2>
       <div id="parent" ngxAccess="Resource:Create">
@@ -94,10 +97,11 @@ describe('Access Directive', () => {
     `);
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(TestComponent);
     fixture.detectChanges();
+    tick();
     expect(fixture.debugElement.query(By.css('div#parent'))).toBeTruthy()
     expect(fixture.debugElement.query(By.css('div#child1'))).toBeTruthy()
     expect(fixture.debugElement.query(By.css('div#child2'))).toBeTruthy()
     expect(fixture.debugElement.query(By.css('div#child3'))).toBeFalsy()
-  });
+  }));
 
 });

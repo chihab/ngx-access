@@ -1,8 +1,8 @@
-import { from, Observable, of, zip, combineLatest, Subject } from 'rxjs';
-import { map, mergeMap, switchMap, catchError } from 'rxjs/operators';
+import { combineLatest, from, Observable, of, Subject, zip } from 'rxjs';
+import { catchError, map, mergeMap, switchMap } from 'rxjs/operators';
 import { flatten } from './flatten';
 import { operator } from './operator.rx';
-import { ExpNode, parser, TokenType } from './parser';
+import { parser, TokenType } from './parser';
 
 export type HasAccessStrategy = (accessName: string) => Observable<boolean>;
 
