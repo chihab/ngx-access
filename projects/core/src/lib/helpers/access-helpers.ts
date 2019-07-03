@@ -11,7 +11,7 @@ let hasAccessStrategy: HasAccessStrategy = () => of(false);
 let reactive = false;
 let flattened;
 
-const evaluate = (key): Observable<boolean> => {
+const evaluateExpression = flattened => (key: string): Observable<boolean> => {
   function nextTick(cb) {
     // setTimeout(cb);
     Promise.resolve()
@@ -29,7 +29,11 @@ const evaluate = (key): Observable<boolean> => {
     return node;
   }
 }
+
+let evaluate;
+
 export function setAccessConfiguration(_accessConfiguration) {
+
   const node$ = children => {
     const children$ = children.map(
       child => of(child)
@@ -43,6 +47,7 @@ export function setAccessConfiguration(_accessConfiguration) {
       );
     return evaluation$;
   }
+
   const leaf$ = (access: string) => {
     let input$;
     const output$ = new Subject<boolean>();
@@ -61,6 +66,7 @@ export function setAccessConfiguration(_accessConfiguration) {
     waitInput(access);
 
     return {
+      expression: access,
       update: (access) => {
         // input$.complete();
         // waitInput(access);
@@ -71,6 +77,7 @@ export function setAccessConfiguration(_accessConfiguration) {
     }
   }
   flattened = flatten(_accessConfiguration, node$, leaf$);
+  evaluate = evaluateExpression(flattened);
   console.log(flattened);
 }
 
@@ -92,11 +99,11 @@ export function parse(expression) {
 }
 
 export function getAccessExpression(accessKey: string) {
-  return accessConfiguration[accessKey];
+  return flattened[accessKey].expression;
 }
 
 export function setAccessExpression(accessKey: string, accessExpression: string) {
-  accessConfiguration[accessKey] = accessExpression;
+  flattened[accessKey].update(accessExpression);
 }
 
 export function canAccessExpression(accessExpression: string) {

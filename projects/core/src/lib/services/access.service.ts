@@ -19,11 +19,13 @@ export class AccessService {
     this.debug$ = this.debugSubject$.asObservable();
   }
 
-  can(accessConfigurations: string): Observable<boolean> {
-    return canAccessConfiguration(accessConfigurations);
+  can(accessConfiguration: string): Observable<boolean> {
+    console.log('can ' + accessConfiguration);
+    return canAccessConfiguration(accessConfiguration);
   }
 
   canExpression(accessExpression: string): Observable<boolean> {
+    console.log('canExpression ' + accessExpression);
     return canAccessExpression(accessExpression);
   }
 

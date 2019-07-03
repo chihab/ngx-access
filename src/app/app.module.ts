@@ -13,7 +13,12 @@ import { UserComponent } from './user/user.component';
 
 @NgModule({
    declarations: [
-      AppComponent, ProfileComponent, MainComponent, UnauthorizedComponent, UserComponent, AccessExpressionPanel
+      AppComponent, 
+      ProfileComponent, 
+      MainComponent, 
+      UnauthorizedComponent, 
+      UserComponent, 
+      AccessExpressionPanel
    ],
    entryComponents: [AccessExpressionPanel],
    imports: [
@@ -31,10 +36,10 @@ import { UserComponent } from './user/user.component';
          },
          redirect: '/forbidden',
          strategy: { provide: AccessStrategy, useClass: MyAccessStrategy },
-         reactive: true
-         // editor: {
-         //    component: AccessExpressionPanel,
-         // }
+         reactive: true,
+         editor: {
+            component: AccessExpressionPanel,
+         }
       }),
       RouterModule.forRoot([
          { path: '', component: MainComponent },

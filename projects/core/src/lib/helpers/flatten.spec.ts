@@ -1,5 +1,5 @@
-import { combineLatest, from, Observable, of, Subject } from 'rxjs';
-import { map, mergeMap, reduce, scan, switchMap, take, tap } from 'rxjs/operators';
+import { combineLatest, Observable, of, Subject } from 'rxjs';
+import { map, mergeMap, switchMap, tap } from 'rxjs/operators';
 import { flatten } from './flatten';
 
 describe('Flatten Library', () => {
@@ -11,7 +11,7 @@ describe('Flatten Library', () => {
         .then(cb)
     }
 
-    const evaluate = (flatChildren, key): Observable<boolean> => {
+    const evaluateExpression = flatChildren => (key: string): Observable<boolean> => {
       const node = flatChildren[key];
       if (node.hasOwnProperty('input$')) {
         nextTick(_ => node.input$.next());
@@ -22,11 +22,11 @@ describe('Flatten Library', () => {
       }
     }
 
-    const node$ = (flatChildren, children) => {
+    const node$ = children => {
       const children$ = children.map(
         child => of(child)
           .pipe(
-            mergeMap(node => evaluate(flatChildren, node))
+            mergeMap(node => evaluate(node))
           ),
       );
       const evaluation$ = combineLatest(...children$)
@@ -93,6 +93,8 @@ describe('Flatten Library', () => {
       Export: 'CanExport'
     }, node$, leaf$);
 
+    const evaluate = evaluateExpression(flattened);
+
     const canAccess = (access: string) => {
       const userAccesses = ['CanWriteFirstName', 'CanReadAll'];
       const evaluation = userAccesses.some(_access => _access === access);
@@ -103,7 +105,7 @@ describe('Flatten Library', () => {
 
     function test(key, expected) {
       return (done) => {
-        evaluate(flattened, key).subscribe(value => {
+        evaluate(key).subscribe(value => {
           expect(value).toBe(expected);
           done();
         })
@@ -115,27 +117,14 @@ describe('Flatten Library', () => {
     it('Main:Write', test('Main:Write', true));
     it('Main:Read', test('Main:Read', false));
 
-    // fit('Update to failing access', (done) => {
-    //   // flattened['Main.UserForm.FirstName:Write'].update('CanWriteAll');
-    //   evaluate(flattened, 'Main.UserForm.FirstName:Write').subscribe(value => {
-    //     expect(value).toBe(true);
-    //     done();
-    //   })
-    // })
-
     it('Update to successfull access', (done) => {
-      evaluate(flattened, 'Main.UserForm:Read').subscribe(value => {
+      evaluate('Main.UserForm:Read').subscribe(value => {
         console.log('Access evaluation Main.UserForm:Read ' + value);
-        // expect(value).toBe(false);
-        // done();
       })
-      evaluate(flattened, 'Main.UserForm.FirstName:Read').subscribe(value => {
+      evaluate('Main.UserForm.FirstName:Read').subscribe(value => {
         console.log('Access evaluation Main.UserForm.FirstName:Read ' + value);
-      //   // expect(value).toBe(true);
       })
-      // setTimeout(() => flattened['Main.UserForm.FirstName:Read'].update('CanReadAll'));
-
-      setTimeout(done, 2000)
+      setTimeout(done);
     })
 
   });

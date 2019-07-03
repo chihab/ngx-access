@@ -50,7 +50,6 @@ export class AccessDirective implements OnInit {
     this.ngxAccessPath = ngxAccess;
 
     if (this.accessConfig.editor) {
-      // this.expression = Array.from(this.accessService.getAccessExpression(ngxAccess)).map(expr => `(${expr})`).join('|');
       this.expression = this.accessService.getAccessExpression(ngxAccess);
       if (this.expression) {
         this.accessService.debug()
@@ -66,6 +65,8 @@ export class AccessDirective implements OnInit {
               this.checkRealAccess();
             }
           })
+      } else {
+        this.checkRealAccess();
       }
     } else {
       this.checkRealAccess();
@@ -97,7 +98,7 @@ export class AccessDirective implements OnInit {
     }
     this.expressionSubscription = instance.onExpression
       .pipe(
-        filter(AccessExpression => !!AccessExpression),
+        filter(accessExpression => !!accessExpression),
         distinctUntilChanged()
       )
       .subscribe((expression) => {
