@@ -51,23 +51,19 @@ export class AccessDirective implements OnInit {
 
     if (this.accessConfig.editor) {
       this.expression = this.accessService.getAccessExpression(ngxAccess);
-      if (this.expression) {
-        this.accessService.debug()
-          .pipe(
-            distinctUntilChanged(),
-            takeUntil(this.onDestroy$)
-          )
-          .subscribe(debug => {
-            this.cleanUp();
-            if (debug) {
-              this.checkDebugAccess();
-            } else {
-              this.checkRealAccess();
-            }
-          })
-      } else {
-        this.checkRealAccess();
-      }
+      this.accessService.debug()
+        .pipe(
+          distinctUntilChanged(),
+          takeUntil(this.onDestroy$)
+        )
+        .subscribe(debug => {
+          this.cleanUp();
+          if (debug) {
+            this.checkDebugAccess();
+          } else {
+            this.checkRealAccess();
+          }
+        })
     } else {
       this.checkRealAccess();
     }
@@ -80,34 +76,42 @@ export class AccessDirective implements OnInit {
     }
     if (this.expressionRef) {
       this.viewContainer.remove(this.viewContainer.indexOf(this.expressionRef.hostView));
-      this.expressionSubscription.unsubscribe();
+      if (this.expressionSubscription) {
+        this.expressionSubscription.unsubscribe();
+      }
       this.expressionRef = null;
     }
   }
 
   private checkDebugAccess() {
+    let instance = this.createEditorComponent();
+    if (this.expression) {
+      instance.expression = this.expression;
+      if (this.expressionSubscription) {
+        this.expressionSubscription.unsubscribe();
+      }
+      this.expressionSubscription = instance.onExpression
+        .pipe(
+          filter(accessExpression => !!accessExpression),
+          distinctUntilChanged()
+        )
+        .subscribe((expression) => {
+          console.log('Update view (debug) please....');
+          this.expression = expression;
+          this.accessService.setAccessExpression(this.ngxAccess, this.expression);
+          this.checkAccess(canAccess => instance.canAccess = canAccess);
+        });
+    }
+    this.checkAccess(canAccess => instance.canAccess = canAccess);
+  }
+
+  private createEditorComponent() {
     this.viewRef = this.viewContainer.createEmbeddedView(this.template);
     const [node] = this.viewRef.rootNodes;
     const expressionComponent = this.accessConfig.editor.component || AccessExpressionEditor;
     let componentFactory: ComponentFactory<AccessExpressionEditor> = this.componentFactoryResolver.resolveComponentFactory(expressionComponent);
     this.expressionRef = this.viewContainer.createComponent<AccessExpressionEditor>(componentFactory, 0, this.injector, [[node]]);
-    let instance = <AccessExpressionEditor>this.expressionRef.instance;
-    instance.expression = this.expression;
-    if (this.expressionSubscription) {
-      this.expressionSubscription.unsubscribe();
-    }
-    this.expressionSubscription = instance.onExpression
-      .pipe(
-        filter(accessExpression => !!accessExpression),
-        distinctUntilChanged()
-      )
-      .subscribe((expression) => {
-        console.log('Update view (debug) please....');
-        this.expression = expression;
-        this.accessService.setAccessExpression(this.ngxAccess, this.expression);
-        this.checkAccess(canAccess => instance.canAccess = canAccess);
-      });
-    this.checkAccess(canAccess => instance.canAccess = canAccess);
+    return <AccessExpressionEditor>this.expressionRef.instance;
   }
 
   private checkRealAccess() {

@@ -1,10 +1,5 @@
 <div>
-  <input type="text" [value]="expression" #expr (keyup.enter)="onExpression.emit(expr.value)" />
+  <input *ngIf="expression" type="text" [value]="expression" #expr (keyup.enter)="onExpression.emit(expr.value)" />
   {{canAccess ? 'Visible': 'Hidden'}}
 </div>
 <ng-content></ng-content>
-
-<!-- <div class="expression2">
-  <span class="edit icon">x</span>
-  <ng-content></ng-content>
-</div> -->
