@@ -78,7 +78,7 @@ export function setAccessConfiguration(_accessConfiguration) {
   }
   flattened = flatten(_accessConfiguration, node$, leaf$);
   evaluate = evaluateExpression(flattened);
-  console.log(flattened);
+  accessConfiguration = _accessConfiguration;
 }
 
 export function setHasAccessStrategy(_hasAccessStrategy: HasAccessStrategy, _reactive = false) {

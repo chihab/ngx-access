@@ -20,12 +20,10 @@ export class AccessService {
   }
 
   can(accessConfiguration: string): Observable<boolean> {
-    console.log('can ' + accessConfiguration);
     return canAccessConfiguration(accessConfiguration);
   }
 
   canExpression(accessExpression: string): Observable<boolean> {
-    console.log('canExpression ' + accessExpression);
     return canAccessExpression(accessExpression);
   }
 
