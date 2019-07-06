@@ -104,6 +104,9 @@ export function getAccessExpression(accessKey: string) {
 
 export function setAccessExpression(accessKey: string, accessExpression: string) {
   flattened[accessKey].update(accessExpression);
+  const [accessPath, groupBy] = accessKey.split(':');
+  const obj = accessPath.split('.').reduce((obj, key) => obj[key], accessConfiguration);
+  obj[groupBy] = accessExpression;
 }
 
 export function canAccessExpression(accessExpression: string) {

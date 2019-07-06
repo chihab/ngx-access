@@ -1,10 +1,9 @@
 <!-- <div *ngxAccess="'UserForm.FirstName : Read'; else unauthorized"> Hello World </div> -->
 
-<h1 *ngxAccess="'UserForm:Read'"> User Form </h1>
+<h1 *ngxAccess="'UserForm:Read'"> User Form Component </h1>
 
 <label *ngxAccess="'UserForm.FirstName:Read'; else missingAccess">
-  Name
-  <input type="text" />
+  Component 1
 </label>
 
 <hr />
@@ -24,3 +23,6 @@
 Debug <input type="checkbox" (click)="debug(check.checked)" [checked]="debug$|async" #check />
 <h3>Configuration</h3>
 <pre>{{accesses | json}}</pre>
+
+
+<button (click)="copy()"> Copy </button>
