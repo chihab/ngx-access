@@ -10,6 +10,10 @@ import { MainComponent } from './main/main.component';
 import { ProfileComponent } from './profile/profile.component';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 import { UserComponent } from './user/user.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { DashboardComponent } from './dashboard/dashboard.component';
+import { MatGridListModule, MatCardModule, MatMenuModule, MatIconModule, MatButtonModule } from '@angular/material';
+import { LayoutModule } from '@angular/cdk/layout';
 
 @NgModule({
    declarations: [
@@ -18,7 +22,7 @@ import { UserComponent } from './user/user.component';
       MainComponent, 
       UnauthorizedComponent, 
       UserComponent, 
-      AccessExpressionPanel
+      AccessExpressionPanel, DashboardComponent
    ],
    entryComponents: [AccessExpressionPanel],
    imports: [
@@ -55,7 +59,14 @@ import { UserComponent } from './user/user.component';
          }
       ]),
       BrowserModule,
-      HttpClientModule
+      HttpClientModule,
+      BrowserAnimationsModule,
+      MatGridListModule,
+      MatCardModule,
+      MatMenuModule,
+      MatIconModule,
+      MatButtonModule,
+      LayoutModule
    ],
    bootstrap: [AppComponent]
 })
