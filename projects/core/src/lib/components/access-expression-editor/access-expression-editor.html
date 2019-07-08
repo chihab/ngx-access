@@ -1,8 +1,8 @@
-<span class="expression" [ngClass]="{visible: canAccess, hidden: !canAccess}" [satPopoverAnchorFor]="popOver"
+<!-- <span class="expression" [ngClass]="{visible: canAccess, hidden: !canAccess}" [satPopoverAnchorFor]="popOver"
   (click)="popOver.open(); expr.focus()" (mouseleave)="popOver.close()">Edit</span>
 <ng-content></ng-content>
 
 <sat-popover #popOver>
   <input type="text" [value]="expression" #expr (keyup.enter)="onExpression.emit(expr.value)" />
   {{canAccess ? 'Visible': 'Hidden'}}
-</sat-popover>
+</sat-popover> -->

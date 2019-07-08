@@ -101,7 +101,7 @@ describe('Access Directive', () => {
     expect(fixture.debugElement.query(By.css('div#parent'))).toBeTruthy()
     expect(fixture.debugElement.query(By.css('div#child1'))).toBeTruthy()
     expect(fixture.debugElement.query(By.css('div#child2'))).toBeTruthy()
-    expect(fixture.debugElement.query(By.css('div#child3'))).toBeFalsy()
+    expect(fixture.debugElement.query(By.css('div#child3'))).toBeTruthy()
   }));
 
 });

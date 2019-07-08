@@ -13,7 +13,7 @@ export function flatten(tree, nodeEvaluator, leafEvaluator) {
           const childPath = getPath(nodePath, '.', _key);
           const childNode = visitor(node[_key], nodePath, _key);
           if (childNode.__type === 'LEAF') {
-            _acc[_key] = leafEvaluator(childNode.__value);
+            _acc[_key] = leafEvaluator(childNode.__value, node);
             return _acc;
           }
           return Object.keys(childNode)

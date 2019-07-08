@@ -1,5 +1,5 @@
-import { combineLatest, from, Observable, of, Subject, zip } from 'rxjs';
-import { catchError, map, mergeMap, switchMap } from 'rxjs/operators';
+import { combineLatest, from, Observable, of, Subject, zip, Subscription } from 'rxjs';
+import { catchError, map, mergeMap, switchMap, tap } from 'rxjs/operators';
 import { flatten } from './flatten';
 import { operator } from './operator.rx';
 import { parser, TokenType } from './parser';
@@ -10,6 +10,71 @@ let accessConfiguration = {};
 let hasAccessStrategy: HasAccessStrategy = () => of(false);
 let reactive = false;
 let flattened;
+let evaluate;
+
+class Leaf {
+  private output: Subject<boolean> = new Subject<boolean>();
+  input$: Subject<string> = new Subject<string>();
+  output$: Observable<boolean>;
+  constructor(public expression: string, private parent?) {
+    this.output$ = this.output.asObservable();
+    this.input$
+      .pipe(
+        switchMap(_ => canAccessExpression(this.expression))
+      )
+      .subscribe(hasAccess => {
+        this.output.next(hasAccess);
+      });
+  }
+  update(access: string) {
+    this.expression = access;
+    this.input$.next()
+  }
+}
+/**
+ * TODO
+ * A node has to be reactive to adding/removing its children 
+ * add$: child added => add child to children list
+ * remove$: child removed => remove child from children list
+ * output$: evaluation of children
+ * each node react to its children output$s
+ */
+class Node {
+  // private output: Subject<boolean> = new Subject<boolean>();
+  input$: Subject<any> = new Subject<any>();
+  output$: Observable<boolean>;
+  private subsciption = new Subscription();
+  constructor(private children: [], private parent?) {
+    // this.output$ = this.output.asObservable();
+    this.evaluate();
+  }
+  evaluate() {
+    if (this.subsciption) {
+      this.subsciption.unsubscribe();
+    }
+    const children$ = this.children.map(
+      child => of(child)
+        .pipe(
+          mergeMap(child => evaluate(child))
+        ),
+    );
+    this.output$ = combineLatest(...children$)
+      .pipe(
+        map((evaluates: boolean[]) => evaluates.some(_evaluate => _evaluate))
+      )
+      // .subscribe(hasAccess => {
+      //   this.output.next(hasAccess);
+      // });
+  }
+  add() {
+    // add child
+    this.evaluate();
+  }
+  remove() {
+    // remove child
+    this.evaluate();
+  }
+}
 
 const evaluateExpression = flattened => (key: string): Observable<boolean> => {
   function nextTick(cb) {
@@ -17,64 +82,36 @@ const evaluateExpression = flattened => (key: string): Observable<boolean> => {
     Promise.resolve()
       .then(cb)
   }
-  console.log('Testing access with key ' + key);
   const node = flattened && flattened[key];
   if (!node)
     return of(false);
-  if (node.hasOwnProperty('input$')) {
+  if (node instanceof Leaf) {
     nextTick(_ => node.input$.next());
-    return node.output$;
   }
-  else {
-    return node;
-  }
+  return node.output$;
 }
-
-let evaluate;
 
 export function setAccessConfiguration(_accessConfiguration) {
 
   const node$ = children => {
-    const children$ = children.map(
-      child => of(child)
-        .pipe(
-          mergeMap(node => evaluate(node))
-        ),
-    );
-    const evaluation$ = combineLatest(...children$)
-      .pipe(
-        map((evaluates: boolean[]) => evaluates.findIndex(_evaluate => _evaluate) !== -1)
-      );
-    return evaluation$;
+    // const children$ = children.map(
+    //   child => of(child)
+    //     .pipe(
+    //       mergeMap(child => evaluate(child))
+    //     ),
+    // );
+    // const evaluation$ = combineLatest(...children$)
+    //   .pipe(
+    //     map((evaluates: boolean[]) => evaluates.some(_evaluate => _evaluate))
+    //   );
+    // return {
+    //   output$: evaluation$
+    // }
+    return new Node(children);
   }
 
-  const leaf$ = (access: string) => {
-    let input$;
-    const output$ = new Subject<boolean>();
-
-    function waitInput(access) {
-      input$ = new Subject<string>();
-      input$
-        .pipe(
-          // tap(_access => console.log (_access, _access ? 'Do not notify parent' : 'Notify parent' )),
-          switchMap(_access => canAccessExpression(_access || access))
-        )
-        .subscribe(hasAccess => {
-          output$.next(hasAccess);
-        });
-    }
-    waitInput(access);
-
-    return {
-      expression: access,
-      update: (access) => {
-        // input$.complete();
-        // waitInput(access);
-        input$.next(access)
-      },
-      input$,
-      output$: output$.asObservable()
-    }
+  const leaf$ = (access: string, parent) => {
+    return new Leaf(access, parent);
   }
   flattened = flatten(_accessConfiguration, node$, leaf$);
   evaluate = evaluateExpression(flattened);
@@ -99,11 +136,20 @@ export function parse(expression) {
 }
 
 export function getAccessExpression(accessKey: string) {
-  return flattened[accessKey].expression;
+  const expression = flattened[accessKey]
+    ? flattened[accessKey] instanceof Leaf
+      ? flattened[accessKey].expression
+      : undefined
+    : '';
+  return expression;
 }
 
 export function setAccessExpression(accessKey: string, accessExpression: string) {
-  flattened[accessKey].update(accessExpression);
+  if (!flattened[accessKey]) {
+    flattened[accessKey] = new Leaf(accessExpression);
+  } else {
+    flattened[accessKey].update(accessExpression);
+  }
   const [accessPath, groupBy] = accessKey.split(':');
   const obj = accessPath.split('.').reduce((obj, key) => obj[key], accessConfiguration);
   obj[groupBy] = accessExpression;
