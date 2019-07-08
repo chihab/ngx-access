@@ -10,9 +10,9 @@ import { Observable } from 'rxjs';
 export class UserComponent {
 
   allPermissions: string[] = [
-    'CanRead',
-    'CanWrite',
-    'CanUpdate'
+    'CanWriteFirstName',
+    'CanWriteLastName',
+    'CanWriteLogin'
   ];
   permissions$: Observable<string[]>;
   

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AccessStrategy } from 'ngx-access';
 import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { UserService } from './user.service';
 
 @Injectable()
@@ -10,8 +10,7 @@ export class MyAccessStrategy implements AccessStrategy {
   has(access: string): Observable<boolean> {
     return this.userService.getPermissions()
       .pipe(
-        map(permissions => permissions.some(permission => permission === access)),
-        // tap(canAccess => console.log('From strategy ' + canAccess))
+        map(permissions => permissions.some(permission => permission === access))
       );
   }
 }

@@ -1,0 +1,11 @@
+.hidden {
+  opacity: 0.5;
+}
+
+.mat-drawer {
+  z-index: auto;
+}
+
+.mat-drawer-container {
+  z-index: auto;
+}

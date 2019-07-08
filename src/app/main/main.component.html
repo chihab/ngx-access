@@ -1,14 +1,14 @@
-<!-- <div *ngxAccess="'UserForm.FirstName : Read'; else unauthorized"> Hello World </div> -->
+<app-user></app-user>
 
-<h1 *ngxAccess="'UserForm:Read'"> User Form Component </h1>
+<h2 *ngxAccess="'User:Write'"> User Form Component </h2>
 
-<label *ngxAccess="'UserForm.FirstName:Read'; else missingAccess">
+<label *ngxAccess="'User.FirstName:Write'; else missingAccess">
   Component 1
 </label>
 
 <hr />
 
-<div *ngxAccess="'UserForm.Login:Read'; else missingAccess">
+<div *ngxAccess="'User.Login:Write'; else missingAccess">
   Component 2
 </div>
 

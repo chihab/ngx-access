@@ -1,5 +1,22 @@
-<div>
-  <input *ngIf="expression" type="text" [value]="expression" #expr (keyup.enter)="onExpression.emit(expr.value)" />
-  {{canAccess ? 'Visible': 'Hidden'}}
-</div>
-<ng-content></ng-content>
+<mat-drawer-container *ngIf="expression !== undefined; else accessPath">
+  <mat-drawer #drawer mode="side">
+    <mat-form-field>
+      <input matInput required [value]="expression" #expr />
+      <button (click)="onExpression.emit(expr.value)" matButton> Apply </button>
+    </mat-form-field>
+  </mat-drawer>
+  <mat-drawer-content [ngClass]="{hidden: !canAccess}">
+    <ng-container *ngTemplateOutlet="tempOutlet"></ng-container>
+    <mat-icon (click)="drawer.toggle()" [matTooltip]="hint" matTooltipPosition="right">help</mat-icon>
+  </mat-drawer-content>
+</mat-drawer-container>
+
+<ng-template #accessPath>
+  <div [ngClass]="{hidden: !canAccess}">
+    <ng-container *ngTemplateOutlet="tempOutlet"></ng-container>
+  </div>
+</ng-template>
+
+<ng-template #tempOutlet>
+  <ng-content></ng-content>
+</ng-template>

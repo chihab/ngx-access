@@ -12,29 +12,58 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 import { UserComponent } from './user/user.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { MatGridListModule, MatCardModule, MatMenuModule, MatIconModule, MatButtonModule } from '@angular/material';
+import { MatGridListModule, MatCardModule, MatMenuModule, MatIconModule, MatButtonModule, MatToolbarModule, MatSidenavModule, MatListModule, MatInputModule, MatSelectModule, MatRadioModule, MatTooltipModule } from '@angular/material';
 import { LayoutModule } from '@angular/cdk/layout';
+import { NavbarComponent } from './navbar/navbar.component';
+import { ProductComponent } from './product/product.component';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @NgModule({
    declarations: [
-      AppComponent, 
-      ProfileComponent, 
-      MainComponent, 
-      UnauthorizedComponent, 
-      UserComponent, 
-      AccessExpressionPanel, DashboardComponent
+      AppComponent,
+      ProfileComponent,
+      MainComponent,
+      UnauthorizedComponent,
+      UserComponent,
+      AccessExpressionPanel, DashboardComponent, NavbarComponent, ProductComponent
    ],
    entryComponents: [AccessExpressionPanel],
    imports: [
       AccessModule.forRoot({
          accesses: {
-            UserForm: {
+            Product: {
+               Company: {
+                  Write: 'CanWriteCompany'
+               },
                FirstName: {
-                  Read: 'CanRead & CanWrite',
-                  Write: 'CanWrite'
+                  Write: 'CanWriteFirstName'
+               },
+               LastName: {
+                  Write: 'CanWriteLastName'
+               },
+               Address: {
+                  Write: 'CanWriteAddress'
+               },
+               City: {
+                  Write: 'CanWriteCity'
+               },
+               State: {
+                  Write: 'CanWriteState'
+               },
+               PostalCode: {
+                  Write: 'CanWritePostalCode'
+               },
+               Shipping: {
+                  Write: 'CanWriteShipping'
+               },
+            },
+            User: {
+               FirstName: {
+                  Read: 'CanReadFirstName',
+                  Write: 'CanWriteFirstName'
                },
                Login: {
-                  Read: 'CanRead | CanWrite',
+                  Read: 'CanReadLogin',
                }
             }
          },
@@ -47,7 +76,9 @@ import { LayoutModule } from '@angular/cdk/layout';
       }),
       RouterModule.forRoot([
          { path: '', component: MainComponent },
+         { path: 'product', component: ProductComponent },
          { path: 'forbidden', component: UnauthorizedComponent },
+         { path: 'dashboard', component: DashboardComponent },
          { path: 'lazy', loadChildren: './lazy/lazy.module#LazyModule' },
          {
             path: 'profile',
@@ -60,13 +91,22 @@ import { LayoutModule } from '@angular/cdk/layout';
       ]),
       BrowserModule,
       HttpClientModule,
+      FormsModule,
       BrowserAnimationsModule,
       MatGridListModule,
       MatCardModule,
       MatMenuModule,
       MatIconModule,
       MatButtonModule,
-      LayoutModule
+      LayoutModule,
+      MatToolbarModule,
+      MatSidenavModule,
+      MatListModule,
+      MatInputModule,
+      MatSelectModule,
+      MatTooltipModule,
+      MatRadioModule,
+      ReactiveFormsModule
    ],
    bootstrap: [AppComponent]
 })

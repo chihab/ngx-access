@@ -6,7 +6,7 @@ import { Observable, BehaviorSubject } from 'rxjs';
 )
 export class UserService {
 
-  private permissions: Set<string> = new Set(['CanRead', 'CanWrite']);
+  private permissions: Set<string> = new Set(['CanWriteFirstName', 'CanWriteLastName', 'CanWriteLogin']);
   private _permissions$: BehaviorSubject<string[]>;
   private permissions$: Observable<string[]>;
 
