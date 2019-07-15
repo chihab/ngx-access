@@ -1,16 +1,31 @@
 <app-user></app-user>
 
-<h2 *ngxAccess="'User:Write'"> User Form Component </h2>
+<h1 *ngxAccess="'Write'"> Write </h1>
+
+
+<!-- <h2 *ngxAccess="'User:Write'"> User:Write </h2>
 
 <label *ngxAccess="'User.FirstName:Write'; else missingAccess">
-  Component 1
-</label>
+  User.FirstName:Write
+</label> -->
 
 <hr />
 
-<div *ngxAccess="'User.Login:Write'; else missingAccess">
-  Component 2
+<!-- <div *ngxAccess="'User.Login:Write'; else missingAccess">
+  User.Login:Write
 </div>
+
+<div *ngxAccess="'User.Other:Write'; else missingAccess">
+  User.Other:Write
+</div>
+
+<div *ngxAccess="'Main:Write'; else missingAccess">
+  Main:Write
+</div>
+
+<div *ngxAccess="'Main.Something:Write'; else missingAccess">
+  Main.Something:Write
+</div> -->
 
 <ng-template #missingAccess>
   <div style="color: red">

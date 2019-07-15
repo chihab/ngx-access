@@ -16,18 +16,22 @@ class Leaf {
   private output: Subject<boolean> = new Subject<boolean>();
   input$: Subject<string> = new Subject<string>();
   output$: Observable<boolean>;
-  constructor(public expression: string, private parent?) {
+  constructor(public expression: string, public key) {
     this.output$ = this.output.asObservable();
     this.input$
       .pipe(
         switchMap(_ => canAccessExpression(this.expression))
       )
       .subscribe(hasAccess => {
+        console.log('Emitting from ' + this.key);
         this.output.next(hasAccess);
       });
   }
-  update(access: string) {
+  update(access: string/*, add = false*/) {
     this.expression = access;
+    // if (add) {
+    //   this.parent.add(this.expression);
+    // }
     this.input$.next()
   }
 }
@@ -40,34 +44,41 @@ class Leaf {
  * each node react to its children output$s
  */
 class Node {
-  // private output: Subject<boolean> = new Subject<boolean>();
-  input$: Subject<any> = new Subject<any>();
-  output$: Observable<boolean>;
   private subsciption = new Subscription();
-  constructor(private children: [], private parent?) {
-    // this.output$ = this.output.asObservable();
-    this.evaluate();
+  private output: Subject<boolean> = new Subject<boolean>();
+  output$: Observable<boolean> = new Subject();
+  input$: Subject<any> = new Subject<any>();
+  constructor(private children: any[], public key) {
+    this.output$ = this.output.asObservable();
+    setTimeout(() => {
+      this.evaluate();
+    })
   }
   evaluate() {
     if (this.subsciption) {
       this.subsciption.unsubscribe();
     }
+    // TODO: Refactor this
+    console.log(this.children);
     const children$ = this.children.map(
       child => of(child)
         .pipe(
           mergeMap(child => evaluate(child))
         ),
     );
-    this.output$ = combineLatest(...children$)
+    this.subsciption = combineLatest(...children$)
       .pipe(
         map((evaluates: boolean[]) => evaluates.some(_evaluate => _evaluate))
       )
-      // .subscribe(hasAccess => {
-      //   this.output.next(hasAccess);
-      // });
+      .subscribe(hasAccess => {
+        console.log('Emitting from ' + this.key);
+        this.output.next(hasAccess);
+      });
   }
-  add() {
+  add(node) {
     // add child
+    console.log('Pushing child!');
+    this.children.push(node);
     this.evaluate();
   }
   remove() {
@@ -77,41 +88,33 @@ class Node {
 }
 
 const evaluateExpression = flattened => (key: string): Observable<boolean> => {
+  console.log('evaluateExpression: ' + key);
   function nextTick(cb) {
     // setTimeout(cb);
     Promise.resolve()
       .then(cb)
   }
   const node = flattened && flattened[key];
-  if (!node)
+  if (!node) {
+    console.error('Unnown key: ' + key);
+    console.error(flattened);
     return of(false);
+  }
   if (node instanceof Leaf) {
     nextTick(_ => node.input$.next());
   }
+  console.log(node);
   return node.output$;
 }
 
 export function setAccessConfiguration(_accessConfiguration) {
 
-  const node$ = children => {
-    // const children$ = children.map(
-    //   child => of(child)
-    //     .pipe(
-    //       mergeMap(child => evaluate(child))
-    //     ),
-    // );
-    // const evaluation$ = combineLatest(...children$)
-    //   .pipe(
-    //     map((evaluates: boolean[]) => evaluates.some(_evaluate => _evaluate))
-    //   );
-    // return {
-    //   output$: evaluation$
-    // }
-    return new Node(children);
+  const node$ = (children, key) => {
+    return new Node(children, key);
   }
 
-  const leaf$ = (access: string, parent) => {
-    return new Leaf(access, parent);
+  const leaf$ = (access: string, key) => {
+    return new Leaf(access, key);
   }
   flattened = flatten(_accessConfiguration, node$, leaf$);
   evaluate = evaluateExpression(flattened);
@@ -146,12 +149,24 @@ export function getAccessExpression(accessKey: string) {
 
 export function setAccessExpression(accessKey: string, accessExpression: string) {
   if (!flattened[accessKey]) {
-    flattened[accessKey] = new Leaf(accessExpression);
-  } else {
-    flattened[accessKey].update(accessExpression);
+    const [accessPath, groupBy] = accessKey.split(':');
+    const path = accessPath.split('.').slice(0, -1);
+    const parentKey = path ? [path, groupBy].join(':') : groupBy;
+    flattened[accessKey] = new Leaf(accessExpression, accessKey);
+    if (flattened[parentKey])
+      flattened[parentKey].add(accessKey);
+    else
+      flattened[parentKey] = new Node([accessKey], parentKey);
   }
+  flattened[accessKey].update(accessExpression);
+
   const [accessPath, groupBy] = accessKey.split(':');
-  const obj = accessPath.split('.').reduce((obj, key) => obj[key], accessConfiguration);
+  const obj = accessPath.split('.').reduce((obj, key) => {
+    if (!obj[key]) {
+      obj[key] = {};
+    }
+    return obj[key];
+  }, accessConfiguration);
   obj[groupBy] = accessExpression;
 }
 
@@ -162,8 +177,10 @@ export function canAccessExpression(accessExpression: string) {
 }
 
 export function canAccessConfiguration(accessPath: string): Observable<boolean> {
+  console.log('canAccessConfiguration: ' + accessPath);
   return evaluate(accessPath)
     .pipe(
+      tap(() => console.log('Evaluating ' + accessPath)),
       catchError(e => of(e))
     )
 }

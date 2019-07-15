@@ -130,7 +130,7 @@ export class AccessDirective implements OnInit {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
-
+    console.log('Waiting for ' + this.ngxAccessPath + ' from directive')
     const checkAccess$: Observable<boolean> = this.expression
       ? this.accessService.canExpression(this.expression)
       : this.accessService.can(this.ngxAccessPath);
