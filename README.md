@@ -19,6 +19,8 @@
 
 # In a nutshell
 
+There are two ways to define an access control on an element/component.
+
 #### Access Expression Usage
 ```html
 <input *ngxAccessExpr="'CanUpdateAll | (CanUpdateUser & CanUpdateUserPassword)'" type="password" />
@@ -57,13 +59,7 @@ If user has  ```CanUpdateAll``` access, ```CanUpdateUser``` and ```CanUpdateUser
 
 ```app-user-form``` component is displayed only if the user has at least one of the ```Update``` accesses defined in the ```Home.Main.User``` access path hierarchy, namely: ```CanUpdateUserEmail``` or ```CanUpdateUserPassword``` or ```CanUpdateUserAddress``` accesses.
 
-# Getting Started
-
-#### Install ngx-access
-
-```shell
-npm install --save ngx-access
-```
+Both directives `ngxAccess` and `ngxAccessExpr` will evaluate the expression by calling the AccessStrategy implementation service that does the actual verification 
 
 #### Define the access control strategy
 ```ts
@@ -73,9 +69,9 @@ import { AccessStrategy } from 'ngx-access';
 export class TrueAccessStrategy implements AccessStrategy {
   /**
   * called method over matched access in the access expression
-  * example: has("CanUpdateUserEmail")
+  * example: <input *ngxAccessExpr="'CanUpdateUserPassword'" type="password" />
   **/
-  has(access: string): Observable<boolean> {
+  has(access: string): Observable<boolean> { // access here is 'CanUpdateUserPassword'
     // return this.authService.getUserAccesses()
     //    .some(userAccess => userAccess === access)
     return of(true);
@@ -84,6 +80,30 @@ export class TrueAccessStrategy implements AccessStrategy {
 ```
 
 #### Import AccessModule
+
+```ts
+@NgModule({
+   imports: [
+      AccessModule.forRoot({
+         strategy: { 
+           provide: AccessStrategy, 
+           useClass: TrueAccessStrategy 
+        }
+      })
+   ]
+   ...
+})
+export class AppModule { }
+```
+
+
+# Getting Started
+
+#### Install ngx-access
+
+```shell
+npm install --save ngx-access
+```
 
 ```ts
 import { AccessGuard, AccessModule } from 'ngx-access';
@@ -108,7 +128,9 @@ const accesses = {
     }
   }
 }
+```
 
+```ts
 @NgModule({
    imports: [
       AccessModule.forRoot({
@@ -155,6 +177,8 @@ export class AppModule { }
 
 ### Container Component
 
+Rather than repeating the same access path in sibling elements as below:
+
 #### Repeat access path
 ```html
 <div>
@@ -163,6 +187,8 @@ export class AppModule { }
   <app-address *ngxAccess="'Main.User.Address:Update'" [(ngModel)]="user.address"></app-address>
 </div>
 ```
+
+We can define the path access in the parent element/component and replace it on children component with a `$`
 
 #### DRY version
 ```html
@@ -298,7 +324,7 @@ Link is displayed only if user has ```CanReadNotifications``` access **AND** at 
 }
 ```
 
-#### 2. Create ngx-access configuration
+#### 2. Create ngx-access.json configuration
 ```json
 {
   "Home": {
@@ -320,7 +346,7 @@ Link is displayed only if user has ```CanReadNotifications``` access **AND** at 
 
 #### 3. Import ngx-access configuration
 ```ts
-import accesses from './path/to/access.json';
+import accesses from './path/to/ngx-access.json';
 
 @NgModule({
    imports: [
