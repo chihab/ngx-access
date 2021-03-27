@@ -1,8 +1,12 @@
-import TokenType from './token-type';
+import TokenType, { Token, TokenItem } from './token-type';
 
-class ExpNode {
-  constructor(private op, private left, private right?, private literal?) {
-  }
+export class ExpNode {
+  constructor(
+    public op: TokenItem,
+    public left: ExpNode | null,
+    public right?: ExpNode | null,
+    public literal?: string
+  ) {}
 
   isLeaf() {
     return this.op === TokenType.LEAF;
@@ -10,32 +14,32 @@ class ExpNode {
 
   isAtomic() {
     return (
-      this.isLeaf() || (this.op === TokenType.OP_NOT && this.left.isLeaf())
+      this.isLeaf() || (this.op === TokenType.OP_NOT && this.left?.isLeaf())
     );
   }
 
-  getLiteralValue() {
-    return this.literal;
+  getLiteralValue(): string {
+    return this.literal || '';
   }
 
-  static CreateAnd(left, right) {
+  static CreateAnd(left: ExpNode | null, right: ExpNode | null) {
     return new ExpNode(TokenType.BINARY_AND, left, right);
   }
 
-  static CreateNot(exp) {
+  static CreateNot(exp: ExpNode | null) {
     return new ExpNode(TokenType.OP_NOT, exp);
   }
 
-  static CreateOr(left, right) {
+  static CreateOr(left: ExpNode | null, right: ExpNode | null) {
     return new ExpNode(TokenType.BINARY_OR, left, right);
   }
 
-  static CreateLiteral(lit) {
+  static CreateLiteral(lit: string) {
     return new ExpNode(TokenType.LEAF, null, null, lit);
   }
 }
 
-const make = gen => {
+export const make = (gen: Generator<Token>): ExpNode | null => {
   const data = gen.next().value;
 
   switch (data.type) {
@@ -57,31 +61,39 @@ const make = gen => {
   return null;
 };
 
-const nodeEvaluator = (tree, literalEvaluator) => {
-  if (tree.isLeaf()) {
-    return literalEvaluator(tree.getLiteralValue());
-  }
+export type NodeEvaluator = (
+  tree: ExpNode | null | undefined,
+  literalEvaluator: LiteralEvaluator
+) => boolean;
 
-  if (tree.op === TokenType.OP_NOT) {
-    return !nodeEvaluator(tree.left, literalEvaluator);
-  }
+export type LiteralEvaluator = (tokenItem?: TokenItem) => boolean;
 
-  if (tree.op === TokenType.BINARY_OR) {
-    return (
-      nodeEvaluator(tree.left, literalEvaluator) ||
-      nodeEvaluator(tree.right, literalEvaluator)
-    );
-  }
+export const nodeEvaluator: NodeEvaluator = (
+  tree,
+  literalEvaluator
+): boolean => {
+  if (tree) {
+    if (tree.isLeaf()) {
+      return literalEvaluator(tree.getLiteralValue());
+    }
 
-  if (tree.op === TokenType.BINARY_AND) {
-    return (
-      nodeEvaluator(tree.left, literalEvaluator) &&
-      nodeEvaluator(tree.right, literalEvaluator)
-    );
-  }
-};
+    if (tree.op === TokenType.OP_NOT) {
+      return !nodeEvaluator(tree.left, literalEvaluator);
+    }
 
-export {
-  make,
-  nodeEvaluator
+    if (tree.op === TokenType.BINARY_OR) {
+      return (
+        nodeEvaluator(tree.left, literalEvaluator) ||
+        nodeEvaluator(tree.right, literalEvaluator)
+      );
+    }
+
+    if (tree.op === TokenType.BINARY_AND) {
+      return (
+        nodeEvaluator(tree.left, literalEvaluator) &&
+        nodeEvaluator(tree.right, literalEvaluator)
+      );
+    }
+  }
+  return false;
 };

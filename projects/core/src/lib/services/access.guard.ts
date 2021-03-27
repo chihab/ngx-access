@@ -4,20 +4,27 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AccessService } from './access.service';
 import { ACCESS_CONFIG } from '../config';
+import { AccessModuleConfig } from '../../public-api';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AccessGuard implements CanActivate {
+  constructor(
+    private router: Router,
+    private accessService: AccessService,
+    @Inject(ACCESS_CONFIG) private config: AccessModuleConfig
+  ) {}
 
-  constructor(private router: Router, private accessService: AccessService, @Inject(ACCESS_CONFIG) private config) {
-  }
-
-  canActivate(
-    next: ActivatedRouteSnapshot): Observable<boolean> {
-    return this.accessService.can(next.data.accesses)
+  canActivate(next: ActivatedRouteSnapshot): Observable<boolean> {
+    return this.accessService
+      .can(next.data.accesses)
       .pipe(
-        tap(hasAccess => !hasAccess && this.router.navigate([next.data.redirect || this.config.redirect]))
+        tap(
+          (hasAccess) =>
+            !hasAccess &&
+            this.router.navigate([next.data.redirect || this.config.redirect])
+        )
       );
   }
 }

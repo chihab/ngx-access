@@ -1,29 +1,44 @@
-export function flatten(config, { parse = v => v, group = false } = {}) {
-  const flatConfig = {};
+import {
+  AccessConfiguration,
+  AccessConfigurationItem,
+} from './access-configuration';
 
-  function setConfig(path, value) {
+export type AccessFlatConfiguration = {
+  [key: string]: Set<AccessConfigurationItem>;
+};
+
+export function flatten(
+  config: AccessConfiguration,
+  { parse = (v: any) => v, group = false } = {}
+) {
+  const flatConfig: AccessFlatConfiguration = {};
+
+  function setConfig(path: string, value: AccessConfigurationItem) {
     if (!flatConfig[path]) {
       flatConfig[path] = new Set();
     }
     flatConfig[path].add(value);
   }
 
-  function getPath(path, delimiter, prop) {
-    return path
-      ? path + delimiter + prop
-      : prop;
+  function getPath(path: string, delimiter: string, prop: string) {
+    return path ? path + delimiter + prop : prop;
   }
 
-  function visitor(accesses, prop, value, path) {
+  function visitor(
+    accesses: { action: string; prop: string }[],
+    prop: string,
+    value: AccessConfigurationItem,
+    path: string
+  ): { action: string; prop: string }[] {
     if (Array.isArray(value)) {
-      value.forEach(access => {
+      value.forEach((access: AccessConfigurationItem) => {
         visitor(accesses, prop, access, path);
       });
     } else if (typeof value === 'object') {
       const childrenAccesses = children(value, getPath(path, '.', prop));
       if (group) {
         accesses = accesses.concat(childrenAccesses);
-        accesses.forEach(access => {
+        accesses.forEach((access) => {
           setConfig(getPath(path, ':', access.prop), access.action);
         });
       }
@@ -35,11 +50,15 @@ export function flatten(config, { parse = v => v, group = false } = {}) {
     return accesses;
   }
 
-  function children(obj, path = '') {
-    return Object.keys(obj)
-      .reduce(
-        (accesses, prop) => visitor(accesses, prop, obj[prop], path), []
-      );
+  function children(
+    obj: AccessConfiguration,
+    path = ''
+  ): { action: string; prop: string }[] {
+    return Object.keys(obj).reduce(
+      (accesses: { action: string; prop: string }[], prop) =>
+        visitor(accesses, prop, obj[prop], path),
+      []
+    );
   }
 
   children(config);
