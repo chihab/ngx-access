@@ -27,7 +27,7 @@ export function flatten(
   function visitor(
     accesses: { action: string; prop: string }[],
     prop: string,
-    value: AccessConfigurationItem,
+    value: AccessConfigurationItem | AccessConfigurationItem[],
     path: string
   ): { action: string; prop: string }[] {
     if (Array.isArray(value)) {

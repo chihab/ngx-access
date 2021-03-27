@@ -1,19 +1,11 @@
-import {
-  MonoTypeOperatorFunction,
-  Observable,
-  Observer,
-  OperatorFunction,
-  Subject,
-} from 'rxjs';
+import { Observable, Observer, OperatorFunction, Subject } from 'rxjs';
 import { switchMap, take, takeUntil } from 'rxjs/operators';
-import { AccessConfiguration } from './access-configuration';
-import { ExpNode } from './parser/node';
 import TokenType, { TokenItem } from './parser/token-type';
 
-type Operator = OperatorFunction<ExpNode | null | undefined, boolean>;
+type Operator = OperatorFunction<any, boolean>;
 
 type OperatorFactory = (
-  evaluator$: (tree: ExpNode | undefined | null) => Observable<boolean>,
+  evaluator$: (tree: any) => Observable<boolean>,
   op: TokenItem
 ) => Operator;
 

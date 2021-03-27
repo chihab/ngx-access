@@ -17,7 +17,7 @@ import { AccessService } from '../services/access.service';
   selector: '[ngxAccess]',
 })
 export class AccessDirective implements OnInit {
-  @Input() ngxAccess: string | Array<string> = '';
+  @Input() ngxAccess: string = '';
   @Input() ngxAccessElse?: TemplateRef<any>;
   onDestroy$ = new Subject<void>();
 

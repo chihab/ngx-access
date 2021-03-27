@@ -19,7 +19,7 @@ export function setHasAccessStrategy(accessTest: HasAccessStrategy) {
   hasAccessStrategy = accessTest;
 }
 
-export function parse(expression: string) {
+export function parse(expression: string): { path: string; action: string } {
   const arr = expression.replace(/\s/g, '').split(':');
   return {
     path: arr[0] || '',
@@ -71,7 +71,6 @@ function nodeEvaluator(
 ): Observable<boolean> {
   if (tree) {
     if (tree.isLeaf()) {
-      console.log('Evaluating with ' + tree.getLiteralValue());
       return literalEvaluator(tree.getLiteralValue());
     }
 
