@@ -1,8 +1,14 @@
-import { canAccessPaths, canAccessExpression, setConfigurationAccess, setHasAccessStrategy } from './access-helpers';
+import {
+  canAccessPaths,
+  canAccessExpression,
+  setConfigurationAccess,
+  setHasAccessStrategy,
+  HasAccessStrategy,
+} from './access-helpers';
 import { of } from 'rxjs';
 
 describe('AccessHelpers', () => {
-  let hasAccessStrategy;
+  let hasAccessStrategy: jasmine.Spy<HasAccessStrategy>;
 
   beforeEach(() => {
     hasAccessStrategy = jasmine.createSpy();
@@ -11,40 +17,39 @@ describe('AccessHelpers', () => {
   });
 
   it('should evaluate access expression', (done: DoneFn) => {
-    canAccessExpression('(CanRead & CanWrite) | !(!Visitor | Admin)')
-      .subscribe(value => {
+    canAccessExpression('(CanRead & CanWrite) | !(!Visitor | Admin)').subscribe(
+      (value) => {
         expect(value).toBe(false);
         expect(hasAccessStrategy).toHaveBeenCalledWith('CanRead');
         expect(hasAccessStrategy).not.toHaveBeenCalledWith('CanWrite');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Visitor');        
-        expect(hasAccessStrategy).not.toHaveBeenCalledWith('Admin');        
+        expect(hasAccessStrategy).toHaveBeenCalledWith('Visitor');
+        expect(hasAccessStrategy).not.toHaveBeenCalledWith('Admin');
         done();
-      });
+      }
+    );
   });
 
   it('should prevent access when no access configuration has been set', (done: DoneFn) => {
-    canAccessPaths('Resource:View')
-      .subscribe(value => {
-        expect(value).toBe(false);
-        done();
-      });
+    canAccessPaths('Resource:View').subscribe((value) => {
+      expect(value).toBe(false);
+      done();
+    });
   });
 
   it('should prevent access when access configuration has been initialized with empty object', (done: DoneFn) => {
     setConfigurationAccess({});
-    canAccessPaths('Resource:View')
-      .subscribe(value => {
-        expect(value).toBe(false);
-        done();
-      });
+    canAccessPaths('Resource:View').subscribe((value) => {
+      expect(value).toBe(false);
+      done();
+    });
   });
 
   it('should not call access strategy when access path not found', (done: DoneFn) => {
     setConfigurationAccess({
       Resource: {
         read: ['SomeRandomAccess'],
-        create: ['UnknownAccess']
-      }
+        create: ['UnknownAccess'],
+      },
     });
     canAccessPaths('Unknown:create').subscribe(() => {
       expect(hasAccessStrategy).not.toHaveBeenCalled();
@@ -58,23 +63,18 @@ describe('AccessHelpers', () => {
         SubResource1: {
           Update: ['UpdateAccess'],
           Create: ['CreateAccess'],
-          Read: ['ReadAccess1', 'ReadAccess2']
+          Read: ['ReadAccess1', 'ReadAccess2'],
         },
         SubResource2: {
-          Read: [
-            ['Access1', 'Access2'],
-            ['Access3 AND Access4'],
-            'Access5'
-          ]
-        }
-      }
+          Read: [['Access1', 'Access2'], ['Access3 AND Access4'], 'Access5'],
+        },
+      },
     });
-    canAccessPaths('Resource.SubResource1:Read')
-      .subscribe(_ => {
-        expect(hasAccessStrategy).toHaveBeenCalledWith('ReadAccess1');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('ReadAccess2');
-        done();
-      });
+    canAccessPaths('Resource.SubResource1:Read').subscribe((_) => {
+      expect(hasAccessStrategy).toHaveBeenCalledWith('ReadAccess1');
+      expect(hasAccessStrategy).toHaveBeenCalledWith('ReadAccess2');
+      done();
+    });
   });
 
   it('should call access strategy with simple string access', (done: DoneFn) => {
@@ -83,13 +83,10 @@ describe('AccessHelpers', () => {
         read: ['ReadAccess'],
         create: ['CreateAccess'],
         array: ['Access1', 'Access2'],
-        complex: [
-          ['Access1', 'Access2'],
-          'Access5'
-        ]
-      }
+        complex: [['Access1', 'Access2'], 'Access5'],
+      },
     });
-    canAccessPaths('Resource:create').subscribe(_ => {
+    canAccessPaths('Resource:create').subscribe((_) => {
       expect(hasAccessStrategy).toHaveBeenCalledWith('CreateAccess');
       done();
     });
@@ -101,13 +98,10 @@ describe('AccessHelpers', () => {
         read: ['ReadAccess'],
         create: ['CreateAccess'],
         array: ['Access1', 'Access2'],
-        complex: [
-          ['Access1', 'Access2'],
-          'Access5'
-        ]
-      }
+        complex: [['Access1', 'Access2'], 'Access5'],
+      },
     });
-    canAccessPaths('Resource:array').subscribe(_ => {
+    canAccessPaths('Resource:array').subscribe((_) => {
       expect(hasAccessStrategy).not.toHaveBeenCalledWith('OtherAccess');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access1');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access2');
@@ -121,13 +115,10 @@ describe('AccessHelpers', () => {
         read: ['ReadAccess'],
         create: ['CreateAccess'],
         array: ['Access1', 'Access2'],
-        complex: [
-          ['Access1', 'Access2'],
-          'Access5'
-        ]
-      }
+        complex: [['Access1', 'Access2'], 'Access5'],
+      },
     });
-    canAccessPaths('Resource:complex').subscribe(_ => {
+    canAccessPaths('Resource:complex').subscribe((_) => {
       expect(hasAccessStrategy).not.toHaveBeenCalledWith('OtherAccess');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access1');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access2');
@@ -139,156 +130,149 @@ describe('AccessHelpers', () => {
   it('should prevent access when access path does not exist', (done: DoneFn) => {
     setConfigurationAccess({
       Resource: {
-        Read: ['SomeRandomAccess']
-      }
+        Read: ['SomeRandomAccess'],
+      },
     });
     hasAccessStrategy.and.returnValue(of(true));
-    canAccessPaths('Resource.Create')
-      .subscribe(value => {
-        expect(value).toBe(false);
-        expect(hasAccessStrategy).not.toHaveBeenCalledWith();
-        done();
-      });
+    canAccessPaths('Resource.Create').subscribe((value) => {
+      expect(value).toBe(false);
+      expect(hasAccessStrategy).not.toHaveBeenCalled();
+      done();
+    });
   });
 
   it('should aggregate children access', (done: DoneFn) => {
     setConfigurationAccess({
       View: {
         Resource1: {
-          Read: 'ReadResource1Access'
+          Read: 'ReadResource1Access',
         },
         Resource2: {
           Read: 'ReadResource2Access',
-          Update: 'UpdateResource2Access'
+          Update: 'UpdateResource2Access',
         },
         Resource3: {
           Update: 'UpdateResource3Access',
           SubResource3: {
-            Read: 'ReadSubResource3ccess'
-          }
-        }
-      }
+            Read: 'ReadSubResource3ccess',
+          },
+        },
+      },
     });
     hasAccessStrategy.and.returnValue(of(false)); // In order to check out all children access
-    canAccessPaths('View:Read')
-      .subscribe(value => {
-        expect(value).toBe(false);
-        expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource1Access');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource2Access');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('ReadSubResource3ccess');
-        expect(hasAccessStrategy).not.toHaveBeenCalledWith('UpdateResource2Access');
-        expect(hasAccessStrategy).not.toHaveBeenCalledWith('UpdateResource3Access');
-        done();
-      });
+    canAccessPaths('View:Read').subscribe((value) => {
+      expect(value).toBe(false);
+      expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource1Access');
+      expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource2Access');
+      expect(hasAccessStrategy).toHaveBeenCalledWith('ReadSubResource3ccess');
+      expect(hasAccessStrategy).not.toHaveBeenCalledWith(
+        'UpdateResource2Access'
+      );
+      expect(hasAccessStrategy).not.toHaveBeenCalledWith(
+        'UpdateResource3Access'
+      );
+      done();
+    });
   });
-
 
   it('should evaluate expression with no operators', (done: DoneFn) => {
     setConfigurationAccess({
       View: {
         Resource0: {
-          Read: 'Read3'
-        }
-      }
+          Read: 'Read3',
+        },
+      },
     });
     hasAccessStrategy.and.callFake((access) => {
       const userAccesses = ['ReadResource2', 'Read3'];
-      return of(userAccesses.findIndex(a => a === access) !== -1);
+      return of(userAccesses.findIndex((a) => a === access) !== -1);
     });
-    canAccessPaths('View:Read')
-      .subscribe(value => {
-        expect(value).toBe(true);
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Read3');
-        done();
-      });
+    canAccessPaths('View:Read').subscribe((value) => {
+      expect(value).toBe(true);
+      expect(hasAccessStrategy).toHaveBeenCalledWith('Read3');
+      done();
+    });
   });
 
   it('should evaluate expression with ! operator', (done: DoneFn) => {
     setConfigurationAccess({
       View: {
         Resource0: {
-          Read: '!Visitor'
-        }
-      }
+          Read: '!Visitor',
+        },
+      },
     });
     hasAccessStrategy.and.callFake((access) => {
       const userAccesses = ['Visitor'];
-      return of(userAccesses.findIndex(a => a === access) !== -1);
+      return of(userAccesses.findIndex((a) => a === access) !== -1);
     });
-    canAccessPaths('View:Read')
-      .subscribe(value => {
-        expect(value).toBe(false);
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Visitor');
-        done();
-      });
+    canAccessPaths('View:Read').subscribe((value) => {
+      expect(value).toBe(false);
+      expect(hasAccessStrategy).toHaveBeenCalledWith('Visitor');
+      done();
+    });
   });
 
   it('should evaluate expression with & operator and parenthesis', (done: DoneFn) => {
     setConfigurationAccess({
       View: {
         Resource1: {
-          Read: 'Read1 | Read2'
-        }
-      }
+          Read: 'Read1 | Read2',
+        },
+      },
     });
     hasAccessStrategy.and.callFake((access) => {
       const userAccesses = ['ReadResource2', 'Read3'];
-      return of(userAccesses.findIndex(a => a === access) !== -1);
+      return of(userAccesses.findIndex((a) => a === access) !== -1);
     });
-    canAccessPaths('View:Read')
-      .subscribe(value => {
-        expect(value).toBe(false);
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Read1');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Read2');
-        done();
-      });
+    canAccessPaths('View:Read').subscribe((value) => {
+      expect(value).toBe(false);
+      expect(hasAccessStrategy).toHaveBeenCalledWith('Read1');
+      expect(hasAccessStrategy).toHaveBeenCalledWith('Read2');
+      done();
+    });
   });
 
   it('should evaluate expression with &, | operators and parenthesis', (done: DoneFn) => {
     setConfigurationAccess({
       View: {
         Resource1: {
-          Read: '(Read1 | Read2) & Read3'
+          Read: '(Read1 | Read2) & Read3',
         },
         Resource2: {
-          Read: 'ReadResource2'
-        }
-      }
+          Read: 'ReadResource2',
+        },
+      },
     });
     hasAccessStrategy.and.callFake((access) => {
       const userAccesses = ['ReadResource2', 'Read3'];
-      return of(userAccesses.findIndex(a => a === access) !== -1);
+      return of(userAccesses.findIndex((a) => a === access) !== -1);
     });
-    canAccessPaths('View:Read')
-      .subscribe(value => {
-        expect(value).toBe(true);
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Read1');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Read2');
-        expect(hasAccessStrategy).not.toHaveBeenCalledWith('Read3');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource2');
-        done();
-      });
+    canAccessPaths('View:Read').subscribe((value) => {
+      expect(value).toBe(true);
+      expect(hasAccessStrategy).toHaveBeenCalledWith('Read1');
+      expect(hasAccessStrategy).toHaveBeenCalledWith('Read2');
+      expect(hasAccessStrategy).not.toHaveBeenCalledWith('Read3');
+      expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource2');
+      done();
+    });
   });
 
   xit('should evaluate expression with &, | operators and parenthesis ', (done: DoneFn) => {
     setConfigurationAccess({
       View: {
         Resource1: {
-          Read: '(CanRead & CanWrite) | (Admin | !Visitor)'
-        }
-      }
+          Read: '(CanRead & CanWrite) | (Admin | !Visitor)',
+        },
+      },
     });
-    canAccessPaths('View.Resource1:Read')
-      .subscribe(value => {
-        expect(value).toBe(false);
-        expect(hasAccessStrategy).toHaveBeenCalledWith('CanRead');
-        expect(hasAccessStrategy).not.toHaveBeenCalledWith('CanWrite');
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Admin');        
-        expect(hasAccessStrategy).toHaveBeenCalledWith('Visitor');   
-        done();
-      });
-  });  
-
+    canAccessPaths('View.Resource1:Read').subscribe((value) => {
+      expect(value).toBe(false);
+      expect(hasAccessStrategy).toHaveBeenCalledWith('CanRead');
+      expect(hasAccessStrategy).not.toHaveBeenCalledWith('CanWrite');
+      expect(hasAccessStrategy).toHaveBeenCalledWith('Admin');
+      expect(hasAccessStrategy).toHaveBeenCalledWith('Visitor');
+      done();
+    });
+  });
 });
-
-

@@ -1,13 +1,13 @@
 import Tokenizer from './tokenizer';
 import { PolishNotation, PolishGenerator } from './polish';
-import { make, nodeEvaluator } from './node';
-import TokenType from './token-type';
+import { ExpNode, make, nodeEvaluator } from './node';
+import TokenType, { Token } from './token-type';
 
-const parser = (exp) => {
-  const tokens = Tokenizer(exp.replace(/\s/g, ''));
-  const polish = PolishNotation(tokens);
-  const gen = PolishGenerator(polish);
-  const tree = make(gen);
+const parser = (exp: string): ExpNode | null => {
+  const tokens: Token[] = Tokenizer(exp.replace(/\s/g, ''));
+  const polish: Token[] = PolishNotation(tokens);
+  const gen: Generator<Token> = PolishGenerator(polish);
+  const tree: ExpNode | null = make(gen);
   return tree;
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "ngx-access",
-  "version": "1.1.2",
+  "version": "0.0.1",
   "description": "Add access control to your components using hierarchical configuration with logical expressions.",
   "author": "Chihab Otmani",
   "repository": {
@@ -20,7 +20,10 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@angular/common": ">=6.0.0",
-    "@angular/core": ">=6.0.0"
+    "@angular/common": "^11.2.7",
+    "@angular/core": "^11.2.7"
+  },
+  "dependencies": {
+    "tslib": "^2.0.0"
   }
 }

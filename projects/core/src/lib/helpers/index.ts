@@ -1,1 +1,1 @@
-export * from './access-helpers';
+export * from './access-configuration';
