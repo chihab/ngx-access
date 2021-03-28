@@ -22,12 +22,11 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Use Angular ${{ matrix.angular-version }}
-        uses: ngworker/angular-versions-action@v3
-        with:
-          angular-version: ${{ matrix.angular-version }}
-
-      - run: yarn install
-      - run: yarn lint
-      - run: yarn build
-      - run: yarn test
+      # - name: Use Angular ${{ matrix.angular-version }}
+      #   uses: ngworker/angular-versions-action@v3
+      #   with:
+      #     angular-version: ${{ matrix.angular-version }}
+      - run: npm install
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test
