@@ -1,6 +1,12 @@
-import { InjectionToken } from '@angular/core';
-import { AccessModuleConfig } from '../public-api';
+import { InjectionToken, Provider } from '@angular/core';
+import { AccessConfiguration } from './helpers';
 
-export const ACCESS_CONFIG = new InjectionToken<AccessModuleConfig>(
+export const ACCESS_CONFIG = new InjectionToken<AccessServiceConfig>(
   'ACCESS_CONFIG'
 );
+
+export interface AccessServiceConfig {
+  accesses?: AccessConfiguration;
+  redirect?: string;
+  strategy?: Provider;
+}

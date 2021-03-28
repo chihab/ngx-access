@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AccessModuleConfig } from '../../public-api';
-import { ACCESS_CONFIG } from '../config';
+import { AccessServiceConfig, ACCESS_CONFIG } from '../config';
 import {
   canAccessPaths,
   setConfigurationAccess,
@@ -15,7 +14,7 @@ import { AccessStrategy } from './access-strategy.service';
 })
 export class AccessService {
   constructor(
-    @Inject(ACCESS_CONFIG) config: AccessModuleConfig,
+    @Inject(ACCESS_CONFIG) config: AccessServiceConfig,
     accessStrategy: AccessStrategy
   ) {
     setHasAccessStrategy((accessName) => accessStrategy.has(accessName));

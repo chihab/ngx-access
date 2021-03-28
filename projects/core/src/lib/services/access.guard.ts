@@ -3,8 +3,7 @@ import { ActivatedRouteSnapshot, CanActivate, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AccessService } from './access.service';
-import { ACCESS_CONFIG } from '../config';
-import { AccessModuleConfig } from '../../public-api';
+import { AccessServiceConfig, ACCESS_CONFIG } from '../config';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +12,7 @@ export class AccessGuard implements CanActivate {
   constructor(
     private router: Router,
     private accessService: AccessService,
-    @Inject(ACCESS_CONFIG) private config: AccessModuleConfig
+    @Inject(ACCESS_CONFIG) private config: AccessServiceConfig
   ) {}
 
   canActivate(next: ActivatedRouteSnapshot): Observable<boolean> {
