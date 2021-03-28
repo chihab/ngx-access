@@ -4,13 +4,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
-    "build:lib": "ng build core",
-    "test": "ng test",
-    "test:lib": "ng test core --watch=false --browsers=ChromeHeadless",
-    "release:lib": "cd projects/core && npm version patch",
-    "lint": "ng lint",
-    "e2e": "ng e2e"
+    "lint": "ng lint core",
+    "build": "ng build core",
+    "test": "ng test core --watch=false --browsers=ChromeHeadless"
   },
   "private": true,
   "dependencies": {
