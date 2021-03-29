@@ -61,9 +61,7 @@ The `ADMIN` and `RH` are evaluated using your custom strategy
 ```ts
 import { AccessStrategy } from "ngx-access";
 
-@Injectable({
-  providedIn: "root",
-})
+@Injectable()
 export class RoleAccessStrategy implements AccessStrategy {
   constructor(private userService: UserService) {}
 
@@ -191,31 +189,31 @@ import { AccessModule, AccessConfiguration } from "ngx-access";
 // - get the configuration from the server [See below]
 const access: AccessConfiguration = {
   Home: {
-      User: {
-        Email: {
-          Read: "CanReadUserEmail",
-          Update: "CanUpdateUserEmail",
-        },
-        Password: {
-          Update: "CanUpdateUserPassword",
-        },
-        Address: {
-          Read: "CanReadUserAddress",
-          Update: "CanUpdateUserAddress",
-        },
+    User: {
+      Email: {
+        Read: "CanReadUserEmail",
+        Update: "CanUpdateUserEmail",
       },
+      Password: {
+        Update: "CanUpdateUserPassword",
+      },
+      Address: {
+        Read: "CanReadUserAddress",
+        Update: "CanUpdateUserAddress",
+      },
+    },
   },
 };
 
 @NgModule({
-   imports: [
-      AccessModule.forRoot({
-         access
-      })
-   ]
-   ...
+  imports: [
+    AccessModule.forRoot({
+      access,
+    }),
+  ],
+  providers: [{ provide: AccessStrategy, useClass: RoleAccessStrategy }],
 })
-export class AppModule { }
+export class AppModule {}
 ```
 
 ### Usage in template
@@ -272,65 +270,63 @@ Rather than repeating the same access path in sibling elements we can define the
 ### Route guard
 
 ```ts
-import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
+import { AccessGuard, AccessModule, AccessStrategy } from "ngx-access";
 
 @NgModule({
-   imports: [
-      AccessModule.forRoot({
-         redirect: '/forbidden'
-      }),
-      RouterModule.forRoot([
-         ...
-         { path: 'forbidden', component: UnauthorizedComponent },
-         { path: 'not-found', component: NotFoundComponent },
-         {
-            path: 'profile',
-            component: ProfileComponent,
-            canActivate: [AccessGuard],
-            data: {
-               access: 'ADMIN'
-            }
-            // if no 'ADMIN' access, guard refirects to '/forbidden' defined at module level
-         },
-         {
-            path: 'salaries',
-            loadChildren: () => import('./salaries/salaries.module').then((m) => m.SalariesModule),
-            canLoad: [AccessGuard],
-            data: {
-               access: 'ADMIN | RH'
-            },
-            // if no 'ADMIN' or 'RH' access, guard refirects to '/not-found'
-            redirect: '/not-found'
-         }
-      ])
-   ]
-   ...
+  imports: [
+    AccessModule.forRoot({
+      redirect: "/forbidden",
+    }),
+    RouterModule.forRoot([
+      { path: "forbidden", component: UnauthorizedComponent },
+      { path: "not-found", component: NotFoundComponent },
+      {
+        path: "profile",
+        component: ProfileComponent,
+        canActivate: [AccessGuard],
+        data: {
+          access: "ADMIN",
+        },
+        // if no 'ADMIN' access, guard refirects to '/forbidden' defined at module level
+      },
+      {
+        path: "salaries",
+        loadChildren: () =>
+          import("./salaries/salaries.module").then((m) => m.SalariesModule),
+        canLoad: [AccessGuard],
+        data: {
+          access: "ADMIN | RH",
+        },
+        // if no 'ADMIN' or 'RH' access, guard refirects to '/not-found'
+        redirect: "/not-found",
+      },
+    ]),
+  ],
+  providers: [{ provide: AccessStrategy, useClass: MyAccessStrategy }],
 })
-export class AppModule { }
+export class AppModule {}
 ```
 
 ### Component
 
 ```ts
-import { Component, OnInit } from '@angular/core';
-import { AccessService } from 'ngx-access';
+import { Component, OnInit } from "@angular/core";
+import { AccessService } from "ngx-access";
 
 @Component({
-  selector: 'app-main',
-  templateUrl: './component.html',
-  styleUrls: ['./component.css']
+  selector: "app-main",
+  templateUrl: "./component.html",
+  styleUrls: ["./component.css"],
 })
 export class MainComponent {
-  constructor(private accessService: AccessService) { }
+  constructor(private accessService: AccessService) {}
 
   submit() {
     let formData = {};
-    if (this.accessService.check('ADMIN | RH')) {
+    if (this.accessService.check("ADMIN | RH")) {
       // Populate formData...
     }
-    ...
   }
-
 }
 ```
 
@@ -372,17 +368,16 @@ export class MainComponent {
 #### 3. Import access.json file
 
 ```ts
-import access from './src/assets/access.json';
+import access from "./src/assets/access.json";
 
 @NgModule({
-   imports: [
-      AccessModule.forRoot({
-         access,
-         ...
-      })
-   ]
-   ...
+  imports: [
+    AccessModule.forRoot({
+      access,
+    }),
+  ],
 })
+export class AppModule {}
 ```
 
 ## <a id="server"></a> Server access configuration
@@ -404,7 +399,6 @@ export function loadServerConfiguration(
 
 @NgModule({
   providers: [
-    DictionaryService,
     {
       provide: APP_INITIALIZER,
       useFactory: loadServerConfiguration,

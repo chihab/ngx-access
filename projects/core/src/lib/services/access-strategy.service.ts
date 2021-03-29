@@ -1,13 +1,6 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
+import { HasAccessStrategy } from '../helpers/access-helpers';
 
 export abstract class AccessStrategy {
-  abstract has(access: string): Observable<boolean>;
-}
-
-@Injectable()
-export class FakeAccessStrategy extends AccessStrategy {
-  has(access: string): Observable<boolean> {
-    return of(false);
-  }
+  abstract has(access: string): Observable<boolean> | boolean;
 }

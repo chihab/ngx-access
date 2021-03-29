@@ -1,4 +1,4 @@
-import { InjectionToken, Provider } from '@angular/core';
+import { InjectionToken } from '@angular/core';
 import { AccessConfiguration } from './helpers';
 
 export const ACCESS_CONFIG = new InjectionToken<AccessServiceConfig>(
@@ -8,5 +8,4 @@ export const ACCESS_CONFIG = new InjectionToken<AccessServiceConfig>(
 export interface AccessServiceConfig {
   accesses?: AccessConfiguration;
   redirect?: string;
-  strategy?: Provider;
 }
