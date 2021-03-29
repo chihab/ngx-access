@@ -22,13 +22,7 @@ ngx-access is an access control library for Angular, specifically designed to be
 - ✅ Display parent only if one of the children is displayed
 - ✅ Document your application access control policy
 - ✅ Provide your custom reactive strategy to verify if the user has a given access
-- ✅ Compatible and tested against all Angular versions since v2
-
-# Demo
-
-Debug mode is activated here hence the popin
-
-TODO: Put a screenshot of debug mode
+- ✅ Compatible and tested against all Angular versions since v2 (WIP 🚧)
 
 # Basic Usage
 
@@ -77,7 +71,7 @@ You have full control over how Access Control should be verified, `ngx-access` d
 
 `ngx-access` is simply the glue between the logical `expression` you put in your template and the custom `AccessStrategy` you define.
 
-There are some predefined strategies provided for common use cases though.
+There are some predefined strategies provided for common use cases though. (WIP 🚧)
 
 # Getting Started
 
@@ -120,7 +114,7 @@ The `input` element is displayed only if the user has `CanUpdateAll` access **OR
 
 If user has `CanUpdateAll` access, `CanUpdateUser` and `CanUpdateUserEmail` access **will not be** evaluated.
 
-### Parent control access
+### Parent control access - (WIP 🚧)
 
 ```html
 <form *ngxAccess>
@@ -380,7 +374,7 @@ import access from "./src/assets/access.json";
 export class AppModule {}
 ```
 
-## <a id="server"></a> Server access configuration
+## <a id="server"></a> Server access configuration (WIP 🚧)
 
 ```ts
 import access from "./src/assets/access.json";
@@ -392,7 +386,7 @@ export function loadServerConfiguration(
   http: HttpClient
 ) {
   this.http.get<AccessModuleConfiguration>("/configuration").pipe(
-    tap((configuration) => accessService.setConfiguration()),
+    tap((configuration) => accessService.setConfiguration(configuration)),
     catchError((e) => accessService.setConfiguration({}))
   );
 }
