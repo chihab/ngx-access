@@ -36,7 +36,7 @@ The `app-sidebar` component is displayed only if the access strategy you define 
 
 ---
 
-Sometimes we want to give access to different roles, we can use logical expressions
+We can also use logical expressions
 
 ```html
 <app-salaries *ngxAccess="'ADMIN | HR'; else unauthorized"></app-salaries>
@@ -46,7 +46,7 @@ Sometimes we want to give access to different roles, we can use logical expressi
 </ng-template>
 ```
 
-The `input` element is displayed only if the user has `ADMIN` **or** `HR` access.
+The `app-salaries` component is displayed only if the user has `ADMIN` **or** `HR` access.
 
 ## Define your Access strategy
 
