@@ -7,6 +7,7 @@
     "lint": "ng lint core",
     "build": "ng build --prod core",
     "test": "ng test core --watch=false --browsers=ChromeHeadless",
+    "test:watch": "ng test core --browsers=ChromeHeadless",
     "build:demo": "ng build --prod ngx-access"
   },
   "private": true,

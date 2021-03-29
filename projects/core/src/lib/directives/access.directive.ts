@@ -17,7 +17,7 @@ import { AccessService } from '../services/access.service';
   selector: '[ngxAccess]',
 })
 export class AccessDirective implements OnInit {
-  @Input() ngxAccess: string = '';
+  @Input() ngxAccess: string | string[] = '';
   @Input() ngxAccessElse?: TemplateRef<any>;
   onDestroy$ = new Subject<void>();
 
@@ -34,15 +34,19 @@ export class AccessDirective implements OnInit {
   ngOnInit() {
     if (this.template) {
       let ngxAccess = this.ngxAccess;
-      if (this.parentAccessDirective) {
-        const { path, action } = parse(this.parentAccessDirective.ngxAccess);
+      if (this.parentAccessDirective && !Array.isArray(this.ngxAccess)) {
+        const { path, action } = parse(
+          this.parentAccessDirective.ngxAccess as string
+        );
         if (this.ngxAccess) {
           if (Array.isArray(this.ngxAccess)) {
             ngxAccess = `${this.ngxAccess.map((access) =>
               access.replace('$', path)
             )}:${action}`;
           } else {
-            const { path: childPath, action: childAction } = parse(ngxAccess);
+            const { path: childPath, action: childAction } = parse(
+              ngxAccess as string
+            );
             ngxAccess = `${childPath.replace('$', path)}:${
               childAction ? childAction : action
             }`;

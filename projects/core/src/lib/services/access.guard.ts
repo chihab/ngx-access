@@ -1,5 +1,11 @@
 import { Inject, Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  CanLoad,
+  Router,
+  Route,
+} from '@angular/router';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AccessService } from './access.service';
@@ -8,7 +14,7 @@ import { AccessServiceConfig, ACCESS_CONFIG } from '../config';
 @Injectable({
   providedIn: 'root',
 })
-export class AccessGuard implements CanActivate {
+export class AccessGuard implements CanActivate, CanLoad {
   constructor(
     private router: Router,
     private accessService: AccessService,
@@ -23,6 +29,18 @@ export class AccessGuard implements CanActivate {
           (hasAccess) =>
             !hasAccess &&
             this.router.navigate([next.data.redirect || this.config.redirect])
+        )
+      );
+  }
+
+  canLoad(route: Route): Observable<boolean> {
+    return this.accessService
+      .can(route.data?.accesses)
+      .pipe(
+        tap(
+          (hasAccess) =>
+            !hasAccess &&
+            this.router.navigate([route.data?.redirect || this.config.redirect])
         )
       );
   }

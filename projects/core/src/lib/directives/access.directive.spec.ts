@@ -39,8 +39,13 @@ describe('Access Directive', () => {
             },
           },
           redirect: '/forbidden',
-          strategy: { provide: AccessStrategy, useClass: MyAccessStrategy },
         }),
+      ],
+      providers: [
+        {
+          provide: AccessStrategy,
+          useClass: MyAccessStrategy,
+        },
       ],
       declarations: [TestComponent, SubComponent],
     });
@@ -59,7 +64,7 @@ describe('Access Directive', () => {
   it('should not create element when access not configured', () => {
     TestBed.overrideTemplate(
       TestComponent,
-      `<div *ngxAccess="'Something'"></div>`
+      `<div *ngxAccess="'Something:Read'"></div>`
     );
     const fixture: ComponentFixture<TestComponent> = TestBed.createComponent(
       TestComponent

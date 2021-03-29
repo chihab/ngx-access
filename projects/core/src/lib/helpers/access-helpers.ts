@@ -6,7 +6,9 @@ import { operator } from './operator.rx';
 import { parser, TokenType } from './parser';
 import { ExpNode } from './parser/node';
 
-export type HasAccessStrategy = (accessName: string) => Observable<boolean>;
+export type HasAccessStrategy = (
+  accessName: string
+) => Observable<boolean> | boolean;
 
 let configurationAccess: AccessFlatConfiguration = {};
 let hasAccessStrategy: HasAccessStrategy = (accessName: string) => of(false);
@@ -35,7 +37,7 @@ export function canAccessExpression(accessExpression: string) {
 }
 
 export function canAccessPaths(
-  accessPath: string | Array<string>
+  accessPath: string | string[]
 ): Observable<boolean> {
   const access: string[] = Array.isArray(accessPath)
     ? accessPath
@@ -71,7 +73,8 @@ function nodeEvaluator(
 ): Observable<boolean> {
   if (tree) {
     if (tree.isLeaf()) {
-      return literalEvaluator(tree.getLiteralValue());
+      const check = literalEvaluator(tree.getLiteralValue());
+      return typeof check === 'boolean' ? of(check) : check;
     }
 
     if (tree.op === TokenType.OP_NOT) {

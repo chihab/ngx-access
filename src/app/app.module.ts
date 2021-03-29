@@ -29,7 +29,6 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
         },
       },
       redirect: '/forbidden',
-      strategy: { provide: AccessStrategy, useClass: MyAccessStrategy },
     }),
     RouterModule.forRoot([
       { path: '', component: MainComponent },
@@ -50,6 +49,12 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
     ]),
     BrowserModule,
     HttpClientModule,
+  ],
+  providers: [
+    {
+      provide: AccessStrategy,
+      useClass: MyAccessStrategy,
+    },
   ],
   bootstrap: [AppComponent],
 })
