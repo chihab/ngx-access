@@ -181,7 +181,7 @@ import { AccessModule, AccessConfiguration } from "ngx-access";
 // Usually we will
 // - define in a configuration file: access.json  [See below]
 // - get the configuration from the server [See below]
-const access: AccessConfiguration = {
+export const ACCESS_CONFIGURATION: AccessConfiguration = {
   Home: {
     User: {
       Email: {
@@ -198,16 +198,42 @@ const access: AccessConfiguration = {
     },
   },
 };
+```
+
+The access configuration can be set either at the module level
+
+```ts
+import { ACCESS_CONFIGURATION } from "./access.ts";
 
 @NgModule({
   imports: [
     AccessModule.forRoot({
-      access,
+      access: ACCESS_CONFIGURATION,
     }),
   ],
   providers: [{ provide: AccessStrategy, useClass: RoleAccessStrategy }],
 })
 export class AppModule {}
+```
+
+Or at the service level (WIP 🚧)
+
+```ts
+import { ACCESS_CONFIGURATION } from "./access.ts";
+
+import { Component } from "@angular/core";
+
+@Component({
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.css"],
+})
+export class AppComponent {
+  constructor(private accessService: AccessService) {}
+  ngOnInit() {
+    this.accessService.setConfiguration(ACCESS_CONFIGURATION);
+  }
+}
 ```
 
 ### Usage in template
