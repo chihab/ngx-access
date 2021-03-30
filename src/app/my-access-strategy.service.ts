@@ -6,6 +6,6 @@ import { Observable, of } from 'rxjs';
 export class MyAccessStrategy implements AccessStrategy {
   constructor() {}
   has(access: string): Observable<boolean> {
-    return of('UserAccess' === access);
+    return of('CanReadFirstName' === access);
   }
 }

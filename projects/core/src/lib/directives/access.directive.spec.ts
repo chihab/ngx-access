@@ -28,7 +28,7 @@ describe('Access Directive', () => {
     TestBed.configureTestingModule({
       imports: [
         AccessModule.forRoot({
-          accesses: {
+          access: {
             Resource: {
               Child1: {
                 Create: 'CanAccess',
@@ -38,7 +38,7 @@ describe('Access Directive', () => {
               },
             },
           },
-          redirect: '/forbidden',
+          redirectTo: '/forbidden',
         }),
       ],
       providers: [

@@ -6,6 +6,6 @@ export const ACCESS_CONFIG = new InjectionToken<AccessServiceConfig>(
 );
 
 export interface AccessServiceConfig {
-  accesses?: AccessConfiguration;
-  redirect?: string;
+  access?: AccessConfiguration;
+  redirectTo?: string;
 }
