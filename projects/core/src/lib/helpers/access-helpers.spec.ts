@@ -184,8 +184,8 @@ describe('AccessHelpers', () => {
       },
     });
     hasAccessStrategy.and.callFake((access) => {
-      const userAccesses = ['ReadResource2', 'Read3'];
-      return of(userAccesses.findIndex((a) => a === access) !== -1);
+      const userAccess = ['ReadResource2', 'Read3'];
+      return of(userAccess.findIndex((a) => a === access) !== -1);
     });
     canAccessPaths('View:Read').subscribe((value) => {
       expect(value).toBe(true);
@@ -203,8 +203,8 @@ describe('AccessHelpers', () => {
       },
     });
     hasAccessStrategy.and.callFake((access) => {
-      const userAccesses = ['Visitor'];
-      return of(userAccesses.findIndex((a) => a === access) !== -1);
+      const userAccess = ['Visitor'];
+      return of(userAccess.findIndex((a) => a === access) !== -1);
     });
     canAccessPaths('View:Read').subscribe((value) => {
       expect(value).toBe(false);
@@ -222,8 +222,8 @@ describe('AccessHelpers', () => {
       },
     });
     hasAccessStrategy.and.callFake((access) => {
-      const userAccesses = ['ReadResource2', 'Read3'];
-      return of(userAccesses.findIndex((a) => a === access) !== -1);
+      const userAccess = ['ReadResource2', 'Read3'];
+      return of(userAccess.findIndex((a) => a === access) !== -1);
     });
     canAccessPaths('View:Read').subscribe((value) => {
       expect(value).toBe(false);
@@ -245,8 +245,8 @@ describe('AccessHelpers', () => {
       },
     });
     hasAccessStrategy.and.callFake((access) => {
-      const userAccesses = ['ReadResource2', 'Read3'];
-      return of(userAccesses.findIndex((a) => a === access) !== -1);
+      const userAccess = ['ReadResource2', 'Read3'];
+      return of(userAccess.findIndex((a) => a === access) !== -1);
     });
     canAccessPaths('View:Read').subscribe((value) => {
       expect(value).toBe(true);

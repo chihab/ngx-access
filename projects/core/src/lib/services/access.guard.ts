@@ -23,24 +23,28 @@ export class AccessGuard implements CanActivate, CanLoad {
 
   canActivate(next: ActivatedRouteSnapshot): Observable<boolean> {
     return this.accessService
-      .can(next.data.accesses)
+      .can(next.data.access)
       .pipe(
         tap(
           (hasAccess) =>
             !hasAccess &&
-            this.router.navigate([next.data.redirect || this.config.redirect])
+            this.router.navigate([
+              next.data.redirectTo || this.config.redirectTo,
+            ])
         )
       );
   }
 
   canLoad(route: Route): Observable<boolean> {
     return this.accessService
-      .can(route.data?.accesses)
+      .can(route.data?.access)
       .pipe(
         tap(
           (hasAccess) =>
             !hasAccess &&
-            this.router.navigate([route.data?.redirect || this.config.redirect])
+            this.router.navigate([
+              route.data?.redirectTo || this.config.redirectTo,
+            ])
         )
       );
   }

@@ -24,19 +24,29 @@ ngx-access is an access control library for Angular, specifically designed to be
 - ✅ Provide your custom reactive strategy to verify if the user has a given access
 - ✅ Compatible and tested against all Angular versions since v2 (WIP 🚧)
 
-# Basic Usage
+# Table of Contents
 
-## Usage in template
+- [In a Nutshell](#in-a-nutshell)
+- [Installation](#installation)
+- [Access Strategy](#access-strategy)
+- [Usage in Template](#usage-in-template)
+- [Usage in Code](#usage-in-code)
+- [Contributors](#contributors)
+- [Credits](#credits)
+
+# In a Nutshell
+
+## Basic usage
 
 ```html
 <app-sidebar *ngxAccess="'ADMIN'"></app-sidebar>
 ```
 
-The `app-sidebar` component is displayed only if the access strategy you define below validates `'ADMIN'`
+The `app-sidebar` component is displayed only if the user has `'ADMIN'` access.
 
 ---
 
-We can also use logical expressions
+## Usage with logical expressions
 
 ```html
 <app-salaries *ngxAccess="'ADMIN | HR'; else unauthorized"></app-salaries>
@@ -46,11 +56,11 @@ We can also use logical expressions
 </ng-template>
 ```
 
-The `app-salaries` component is displayed only if the user has `ADMIN` **or** `HR` access.
+The `app-salaries` component is displayed only if the user has `ADMIN` **OR** `HR` access.
 
 ## Define your Access strategy
 
-The `ADMIN` and `RH` are evaluated using your custom strategy
+The `ADMIN` and `RH` access are evaluated using your custom strategy
 
 ```ts
 import { AccessStrategy } from "ngx-access";
@@ -67,28 +77,52 @@ export class RoleAccessStrategy implements AccessStrategy {
 }
 ```
 
-You have full control over how Access Control should be verified, `ngx-access` doesn't differentiate between User, Role and Permissions based access controls. They're all `access` controls, you put whatever access control logic you want in your `AccessStrategy` service.
+You have full control on how Access Control should be verified, `ngx-access` doesn't differentiate between User, Role and Permissions based access controls. They're all `access` controls, you put whatever access control logic you want in your `AccessStrategy` service.
 
 `ngx-access` is simply the glue between the logical `expression` you put in your template and the custom `AccessStrategy` you define.
 
-There are some predefined strategies provided for common use cases though. (WIP 🚧)
+The Access strategy can be reactive.
 
-# Getting Started
+There are predefined strategies provided for some common use cases though. (WIP 🚧)
 
-### Install ngx-access
+# Installation
+
+## Install ngx-access
 
 ```shell
 npm install --save ngx-access
 ```
 
-### Define your Access strategy
+## Compatibility
+
+ngx-access version 2.x has verified compatibility with the following Angular versions.
+
+| Angular version | ngx-access 2.x support |
+| --------------- | ---------------------- |
+| 11.x            | ✅                     |
+| 10.x            | ✅                     |
+| 9.x             | ✅                     |
+| 8.x             | ✅                     |
+| 7.x             | ✅                     |
+| 6.x             | ✅                     |
+| 5.x             | ✅                     |
+| 4.x             | ✅                     |
+| 2.x             | ✅                     |
+
+If the version you are using is not listed, please [raise an issue in our GitHub repository](https://github.com/chihab/ngx-access/issues/new).
+
+</br>
+
+# Access strategy
+
+To define your custom access strategy
+
+## 1. Define the strategy
 
 ```ts
 import { AccessStrategy } from "ngx-access";
 
-@Injectable({
-  providedIn: "root",
-})
+@Injectable()
 export class PermissionAccessStrategy implements AccessStrategy {
   constructor(private userService: UserService) {}
 
@@ -101,7 +135,45 @@ export class PermissionAccessStrategy implements AccessStrategy {
 }
 ```
 
-### Inline Template Usage
+You can implement a reactive strategy by returning an `Observable<boolean>`.
+
+```ts
+import { AccessStrategy } from "ngx-access";
+
+@Injectable()
+export class PermissionAccessStrategy implements AccessStrategy {
+  constructor(private userService: UserService) {}
+
+  // You have full control on access control logic
+  check(persmission: string): Observable<boolean> {
+    return this.userService
+      .getPermissions()
+      .pipe(
+        map((userPermissions: string[]) =>
+          userPermissions.some(
+            (userPermission) => userPermission === persmission
+          )
+        )
+      );
+  }
+}
+```
+
+## 2. Provide the strategy
+
+```ts
+import { AccessStrategy } from "ngx-access";
+import { PermissionAccessStrategy } from "./core/access.service";
+
+@NgModule({
+  providers: [{ provide: AccessStrategy, useClass: PermissionAccessStrategy }],
+})
+export class AppModule {}
+```
+
+# Usage in template
+
+## Static access control
 
 ```html
 <input
@@ -114,7 +186,7 @@ The `input` element is displayed only if the user has `CanUpdateAll` access **OR
 
 If user has `CanUpdateAll` access, `CanUpdateUser` and `CanUpdateUserEmail` access **will not be** evaluated.
 
-### Parent control access - (WIP 🚧)
+## Parent access control - (WIP 🚧)
 
 ```html
 <form *ngxAccess>
@@ -126,21 +198,21 @@ If user has `CanUpdateAll` access, `CanUpdateUser` and `CanUpdateUserEmail` acce
 </form>
 ```
 
-The `form` (including `h1`) will be displayed only if the user has one of the accesses in the inputs beneath.
+The `form` (including `h1`) will be displayed only if the user has one of the access in the inputs beneath.
 
-## Centralized Access Usage
+## Dynamic access control
 
 We can define access controls on an element/component using external access configuration.
 
 This is useful when we want to maintain the access control outside the application:
 
-- in a static [external file](#json)
+- in a static [external file](#external-access-configuration)
 - dynamically from [server](#server)
 
 ```json
 {
-  "Home": {
-    "User": {
+  "User": {
+    "Form": {
       "Email": {
         "Read": "CanReadUserEmail",
         "Update": "CanUpdateUserEmail"
@@ -160,20 +232,20 @@ This is useful when we want to maintain the access control outside the applicati
 In the template we provide the Access Control path
 
 ```html
-<input *ngxAccess="'Home.User.Password:Update'" />
+<input *ngxAccess="'User.Form.Password:Update'" />
 <!-- is equivalent to -->
 <input *ngxAccess="'CanUpdateUserPassword'" />
 
-<app-user-form *ngxAccess="'Home.User:Update'"></app-user-form>
+<app-user-form *ngxAccess="'User.Form:Update'"></app-user-form>
 <!-- is equivalent to -->
 <app-user-form
   *ngxAccess="'CanUpdateUserEmail | CanUpdateUserPassword | CanUpdateUserAddress'"
 ></app-user-form>
 ```
 
-`app-user-form` component is displayed only if the user has at least one of the `Update` access defined beneath the `Home.User` access path, namely: `CanUpdateUserEmail` or `CanUpdateUserPassword` or `CanUpdateUserAddress` access.
+`app-user-form` component is displayed only if the user has at least one of the `Update` access defined beneath the `User.Form` access path, namely: `CanUpdateUserEmail` or `CanUpdateUserPassword` or `CanUpdateUserAddress` access.
 
-## Usage
+### Configuration
 
 ```ts
 import { AccessModule, AccessConfiguration } from "ngx-access";
@@ -182,8 +254,8 @@ import { AccessModule, AccessConfiguration } from "ngx-access";
 // - define in a configuration file: access.json  [See below]
 // - get the configuration from the server [See below]
 export const ACCESS_CONFIGURATION: AccessConfiguration = {
-  Home: {
-    User: {
+  User: {
+    Form: {
       Email: {
         Read: "CanReadUserEmail",
         Update: "CanUpdateUserEmail",
@@ -200,7 +272,7 @@ export const ACCESS_CONFIGURATION: AccessConfiguration = {
 };
 ```
 
-The access configuration can be set either at the module level
+The access configuration can be set either at module level
 
 ```ts
 import { ACCESS_CONFIGURATION } from "./access.ts";
@@ -216,7 +288,7 @@ import { ACCESS_CONFIGURATION } from "./access.ts";
 export class AppModule {}
 ```
 
-Or at the service level (WIP 🚧)
+Or at service level
 
 ```ts
 import { ACCESS_CONFIGURATION } from "./access.ts";
@@ -236,34 +308,45 @@ export class AppComponent {
 }
 ```
 
-### Usage in template
+#### <a id="server"></a> Server access configuration (WIP 🚧)
 
-```html
-<app-user-form *ngxAccess="'Home.User:Update'"></app-user-form>
+```ts
+import access from "./src/assets/access.json";
 
-<app-user-form
-  *ngxAccess="'Home.User:Update'; else unauthorized"
-></app-user-form>
+import { APP_INITIALIZER } from "@angular/core";
 
-<ng-template #unauthorized>
-  You do not have enough permissions to update user info
-</ng-template>
+export function loadServerConfiguration(
+  accessService: AccessService,
+  http: HttpClient
+) {
+  this.http.get<AccessModuleConfiguration>("/configuration").pipe(
+    tap((configuration) => accessService.setConfiguration(configuration)),
+    catchError((e) => accessService.setConfiguration({}))
+  );
+}
+
+@NgModule({
+  providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: loadServerConfiguration,
+      deps: [AccessService, HttpClient],
+      multi: true,
+    },
+  ],
+})
+export class AppModule {}
 ```
 
-### Multiple Access Paths
+### Logical Expressions (WIP 🚧)
+
+You can use logical expression on your access paths
 
 ```html
-<app-home *ngxAccess="['Home:Update', 'Home:Read']"></app-home>
+<app-user *ngxAccess="'User:Update' | 'User:Read'"></app-user>
 ```
 
-### Router Links
-
-```html
-<a href="" *ngxAccess="'Home.User:Read'" [routerLink]="[...]"> View User </a>
-<a href="" *ngxAccess="'Home.User:Update'" [routerLink]="[...]"> Edit User </a>
-```
-
-### Container Component
+### Container Component (WIP 🚧)
 
 Rather than repeating the same access path in sibling elements we can define the path access in the parent element/component
 
@@ -285,72 +368,7 @@ Rather than repeating the same access path in sibling elements we can define the
 
 `Update` is appended to the resulting string.
 
-## Usage in code
-
-### Route guard
-
-```ts
-import { AccessGuard, AccessModule, AccessStrategy } from "ngx-access";
-
-@NgModule({
-  imports: [
-    AccessModule.forRoot({
-      redirect: "/forbidden",
-    }),
-    RouterModule.forRoot([
-      { path: "forbidden", component: UnauthorizedComponent },
-      { path: "not-found", component: NotFoundComponent },
-      {
-        path: "profile",
-        component: ProfileComponent,
-        canActivate: [AccessGuard],
-        data: {
-          access: "ADMIN",
-        },
-        // if no 'ADMIN' access, guard refirects to '/forbidden' defined at module level
-      },
-      {
-        path: "salaries",
-        loadChildren: () =>
-          import("./salaries/salaries.module").then((m) => m.SalariesModule),
-        canLoad: [AccessGuard],
-        data: {
-          access: "ADMIN | RH",
-        },
-        // if no 'ADMIN' or 'RH' access, guard refirects to '/not-found'
-        redirect: "/not-found",
-      },
-    ]),
-  ],
-  providers: [{ provide: AccessStrategy, useClass: MyAccessStrategy }],
-})
-export class AppModule {}
-```
-
-### Component
-
-```ts
-import { Component, OnInit } from "@angular/core";
-import { AccessService } from "ngx-access";
-
-@Component({
-  selector: "app-main",
-  templateUrl: "./component.html",
-  styleUrls: ["./component.css"],
-})
-export class MainComponent {
-  constructor(private accessService: AccessService) {}
-
-  submit() {
-    let formData = {};
-    if (this.accessService.check("ADMIN | RH")) {
-      // Populate formData...
-    }
-  }
-}
-```
-
-## <a id="json"></a> External access configuration
+### External access configuration
 
 #### 1. Enable JSON imports in tsconfig.json
 
@@ -368,8 +386,8 @@ export class MainComponent {
 
 ```json
 {
-  "Home": {
-    "User": {
+  "User": {
+    "Form": {
       "Email": {
         "Read": "CanReadUserEmail",
         "Update": "CanUpdateUserEmail"
@@ -400,32 +418,66 @@ import access from "./src/assets/access.json";
 export class AppModule {}
 ```
 
-## <a id="server"></a> Server access configuration (WIP 🚧)
+# Usage in code
+
+## Component
 
 ```ts
-import access from "./src/assets/access.json";
+import { Component, OnInit } from "@angular/core";
+import { AccessService } from "ngx-access";
 
-import { APP_INITIALIZER } from "@angular/core";
+@Component({
+  selector: "app-main",
+  templateUrl: "./component.html",
+  styleUrls: ["./component.css"],
+})
+export class MainComponent {
+  constructor(private accessService: AccessService) {}
 
-export function loadServerConfiguration(
-  accessService: AccessService,
-  http: HttpClient
-) {
-  this.http.get<AccessModuleConfiguration>("/configuration").pipe(
-    tap((configuration) => accessService.setConfiguration(configuration)),
-    catchError((e) => accessService.setConfiguration({}))
-  );
+  submit() {
+    if (this.accessService.check("ADMIN | RH")) {
+      // Send ADMIN | RH specific Payload to backend
+    }
+  }
 }
+```
+
+## Route guard
+
+```ts
+import { AccessGuard, AccessModule, AccessStrategy } from "ngx-access";
 
 @NgModule({
-  providers: [
-    {
-      provide: APP_INITIALIZER,
-      useFactory: loadServerConfiguration,
-      deps: [AccessService, HttpClient],
-      multi: true,
-    },
+  imports: [
+    AccessModule.forRoot({
+      redirectTo: "/forbidden",
+    }),
+    RouterModule.forRoot([
+      { path: "forbidden", component: UnauthorizedComponent },
+      { path: "not-found", component: NotFoundComponent },
+      {
+        path: "profile",
+        component: ProfileComponent,
+        canActivate: [AccessGuard],
+        data: {
+          access: "ADMIN",
+        },
+        // if no 'ADMIN' access, guard refirects to '/forbidden' defined at module level
+      },
+      {
+        path: "salaries",
+        loadChildren: () =>
+          import("./salaries/salaries.module").then((m) => m.SalariesModule),
+        canLoad: [AccessGuard],
+        data: {
+          access: "ADMIN | RH",
+        },
+        // if no 'ADMIN' or 'RH' access, guard refirects to '/not-found'
+        redirectTo: "/not-found",
+      },
+    ]),
   ],
+  providers: [{ provide: AccessStrategy, useClass: MyAccessStrategy }],
 })
 export class AppModule {}
 ```

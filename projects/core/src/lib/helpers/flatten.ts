@@ -25,29 +25,29 @@ export function flatten(
   }
 
   function visitor(
-    accesses: { action: string; prop: string }[],
+    access: { action: string; prop: string }[],
     prop: string,
     value: AccessConfigurationItem | AccessConfigurationItem[],
     path: string
   ): { action: string; prop: string }[] {
     if (Array.isArray(value)) {
-      value.forEach((access: AccessConfigurationItem) => {
-        visitor(accesses, prop, access, path);
+      value.forEach((_access: AccessConfigurationItem) => {
+        visitor(access, prop, _access, path);
       });
     } else if (typeof value === 'object') {
-      const childrenAccesses = children(value, getPath(path, '.', prop));
+      const childrenAccess = children(value, getPath(path, '.', prop));
       if (group) {
-        accesses = accesses.concat(childrenAccesses);
-        accesses.forEach((access) => {
+        access = access.concat(childrenAccess);
+        access.forEach((access) => {
           setConfig(getPath(path, ':', access.prop), access.action);
         });
       }
     } else {
       const expression = parse(value.replace(/\s/g, ''));
       setConfig(getPath(path, ':', prop), expression);
-      accesses = accesses.concat({ action: expression, prop });
+      access = access.concat({ action: expression, prop });
     }
-    return accesses;
+    return access;
   }
 
   function children(
@@ -55,8 +55,8 @@ export function flatten(
     path = ''
   ): { action: string; prop: string }[] {
     return Object.keys(obj).reduce(
-      (accesses: { action: string; prop: string }[], prop) =>
-        visitor(accesses, prop, obj[prop], path),
+      (access: { action: string; prop: string }[], prop) =>
+        visitor(access, prop, obj[prop], path),
       []
     );
   }
