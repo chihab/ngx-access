@@ -21,9 +21,9 @@ export class AccessService {
     setConfigurationAccess(config.accesses || {});
   }
 
-  can(accessPaths: string | string[]): Observable<boolean> {
-    return Array.isArray(accessPaths) || accessPaths.includes(':')
-      ? canAccessPaths(accessPaths)
-      : canAccessExpression(accessPaths);
+  can(access: string): Observable<boolean> {
+    return access.includes(':')
+      ? canAccessPaths(access)
+      : canAccessExpression(access);
   }
 }

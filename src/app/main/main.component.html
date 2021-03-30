@@ -1,5 +1,10 @@
 <ul>
-  <div *ngxAccess="'UserForm.FirstName : Read'; else unauthorized">
+  <div
+    *ngxAccess="
+      '( UserForm.FirstName : Write | UserForm.FirstName : Update) | UserForm.FirstName : Read';
+      else unauthorized
+    "
+  >
     Hello World
   </div>
   <div *ngxAccess="'UserAccess'; else unauthorized">Hello World Expr</div>

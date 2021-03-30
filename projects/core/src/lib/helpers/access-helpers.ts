@@ -36,15 +36,10 @@ export function canAccessExpression(accessExpression: string) {
   );
 }
 
-export function canAccessPaths(
-  accessPath: string | string[]
-): Observable<boolean> {
-  const access: string[] = Array.isArray(accessPath)
-    ? accessPath
-    : [accessPath];
-  return from(access).pipe(
-    map((ap: string) => ap.replace(/\s/g, '')),
-    operator(canAccessPath, TokenType.BINARY_OR)
+export function canAccessPaths(accessExpression: string) {
+  return of(accessExpression).pipe(
+    map((ae) => ae.replace(/\s/g, '')),
+    switchMap((ae) => nodeEvaluator(parser(ae), (path) => canAccessPath(path)))
   );
 }
 
