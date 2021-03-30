@@ -16,8 +16,8 @@ export class AccessModule {
         {
           provide: ACCESS_CONFIG,
           useValue: {
-            accesses: config.accesses || {},
-            redirect: config.redirect || '/unauthorized',
+            access: config.access || {},
+            redirectTo: config.redirectTo || '/unauthorized',
           },
         },
       ],

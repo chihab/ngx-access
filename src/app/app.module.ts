@@ -3,11 +3,36 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
+import { AccessService } from 'projects/core/src/public-api';
+import { of } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 import { AppComponent } from './app.component';
 import { MainComponent } from './main/main.component';
 import { MyAccessStrategy } from './my-access-strategy.service';
 import { ProfileComponent } from './profile/profile.component';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
+
+export function loadServerConfiguration(accessService: AccessService) {
+  of({
+    access: {
+      UserForm: {
+        FirstName: {
+          Read: 'UserAccess',
+        },
+        Login: {
+          Read: 'Adminccess',
+        },
+      },
+    },
+    redirectTo: '/forbidden',
+  }).pipe(
+    tap((configuration) => accessService.setConfiguration(configuration)), // <----
+    catchError((_) => {
+      accessService.setConfiguration({});
+      return of();
+    })
+  );
+}
 
 @NgModule({
   declarations: [
@@ -18,7 +43,7 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
   ],
   imports: [
     AccessModule.forRoot({
-      accesses: {
+      access: {
         UserForm: {
           FirstName: {
             Read: 'UserAccess',
@@ -28,7 +53,7 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
           },
         },
       },
-      redirect: '/forbidden',
+      redirectTo: '/forbidden',
     }),
     RouterModule.forRoot([
       { path: '', component: MainComponent },
@@ -43,7 +68,7 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
         component: ProfileComponent,
         canActivate: [AccessGuard],
         data: {
-          accesses: ['Hello.View:Read', 'Hello.View:Update'],
+          access: ['Hello.View:Read', 'Hello.View:Update'],
         },
       },
     ]),
@@ -55,6 +80,12 @@ import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
       provide: AccessStrategy,
       useClass: MyAccessStrategy,
     },
+    // {
+    //   provide: APP_INITIALIZER,
+    //   useFactory: loadServerConfiguration,
+    //   deps: [AccessService],
+    //   multi: true,
+    // },
   ],
   bootstrap: [AppComponent],
 })
