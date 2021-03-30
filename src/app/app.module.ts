@@ -1,8 +1,13 @@
 import { HttpClientModule } from '@angular/common/http';
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { AccessGuard, AccessModule, AccessStrategy } from 'ngx-access';
+import {
+  AccessConfiguration,
+  AccessGuard,
+  AccessModule,
+  AccessStrategy,
+} from 'ngx-access';
 import { AccessService } from 'projects/core/src/public-api';
 import { of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
@@ -12,26 +17,31 @@ import { MyAccessStrategy } from './my-access-strategy.service';
 import { ProfileComponent } from './profile/profile.component';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 
-export function loadServerConfiguration(accessService: AccessService) {
-  of({
-    access: {
-      UserForm: {
-        FirstName: {
-          Read: 'UserAccess',
-        },
-        Login: {
-          Read: 'Adminccess',
+export function loadServerConf(
+  accessService: AccessService
+): () => Promise<void> {
+  return () => {
+    const serverConf$ = of({
+      access: {
+        UserForm: {
+          FirstName: {
+            Read: 'UserAccess',
+          },
+          Login: {
+            Read: 'Adminccess',
+          },
         },
       },
-    },
-    redirectTo: '/forbidden',
-  }).pipe(
-    tap((configuration) => accessService.setConfiguration(configuration)), // <----
-    catchError((_) => {
-      accessService.setConfiguration({});
-      return of();
-    })
-  );
+      redirectTo: '/forbidden',
+    }).pipe(catchError((_) => of({})));
+
+    return serverConf$
+      .toPromise()
+      .then((configuration: AccessConfiguration) => {
+        console.log('Setting configuration', configuration);
+        accessService.setConfiguration(configuration);
+      });
+  };
 }
 
 @NgModule({
@@ -80,12 +90,12 @@ export function loadServerConfiguration(accessService: AccessService) {
       provide: AccessStrategy,
       useClass: MyAccessStrategy,
     },
-    // {
-    //   provide: APP_INITIALIZER,
-    //   useFactory: loadServerConfiguration,
-    //   deps: [AccessService],
-    //   multi: true,
-    // },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: loadServerConf,
+      deps: [AccessService],
+      multi: true,
+    },
   ],
   bootstrap: [AppComponent],
 })

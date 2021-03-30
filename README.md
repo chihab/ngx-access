@@ -93,7 +93,7 @@ There are predefined strategies provided for some common use cases though. (WIP 
 npm install --save ngx-access
 ```
 
-## Compatibility
+## Compatibility - (WIP 🚧)
 
 ngx-access version 2.x has verified compatibility with the following Angular versions.
 
@@ -207,7 +207,7 @@ We can define access controls on an element/component using external access conf
 This is useful when we want to maintain the access control outside the application:
 
 - in a static [external file](#external-access-configuration)
-- dynamically from [server](#server)
+- dynamically from [server](#server-access-configuration)
 
 ```json
 {
@@ -308,11 +308,9 @@ export class AppComponent {
 }
 ```
 
-#### <a id="server"></a> Server access configuration (WIP 🚧)
+#### Server access configuration
 
 ```ts
-import access from "./src/assets/access.json";
-
 import { APP_INITIALIZER } from "@angular/core";
 
 export function loadServerConfiguration(
@@ -325,11 +323,28 @@ export function loadServerConfiguration(
   );
 }
 
+export function loadServerConf(
+  accessService: AccessService,
+  http: HttpClient
+): () => Promise<void> {
+  return () => {
+    const serverConf$ = this.http
+      .get<AccessModuleConfiguration>("/configuration")
+      .pipe(catchError((_) => of({})));
+
+    return serverConf$
+      .toPromise()
+      .then((configuration: AccessConfiguration) => {
+        accessService.setConfiguration(configuration);
+      });
+  };
+}
+
 @NgModule({
   providers: [
     {
       provide: APP_INITIALIZER,
-      useFactory: loadServerConfiguration,
+      useFactory: loadServerConf,
       deps: [AccessService, HttpClient],
       multi: true,
     },
