@@ -93,25 +93,23 @@ There are predefined strategies provided for some common use cases though. (WIP 
 npm install --save ngx-access
 ```
 
-## Compatibility - (WIP 🚧)
+## Compatibility
 
-ngx-access version 2.x has verified compatibility with the following Angular versions.
+ngx-access version 1.4 and above has verified compatibility with the following Angular versions.
 
 | Angular version | ngx-access 2.x support |
 | --------------- | ---------------------- |
 | 11.x            | ✅                     |
 | 10.x            | ✅                     |
-| 9.x             | ✅                     |
-| 8.x             | ✅                     |
-| 7.x             | ✅                     |
-| 6.x             | ✅                     |
-| 5.x             | ✅                     |
-| 4.x             | ✅                     |
-| 2.x             | ✅                     |
+| 9.x             | 🚧                     |
+| 8.x             | 🚧                     |
+| 7.x             | 🚧                     |
+| 6.x             | 🚧                     |
+| 5.x             | 🚧                     |
+| 4.x             | 🚧                     |
+| 2.x             | 🚧                     |
 
 If the version you are using is not listed, please [raise an issue in our GitHub repository](https://github.com/chihab/ngx-access/issues/new).
-
-</br>
 
 # Access strategy
 
