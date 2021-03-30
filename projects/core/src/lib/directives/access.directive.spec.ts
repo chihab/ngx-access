@@ -109,9 +109,9 @@ describe('Access Directive', () => {
       `
       <h2> Parent Component </h2>
       <div id="parent" ngxAccess="Resource:Create">
-        <div id="child1" *ngxAccess="'$.Child1'"> Child 1 </div>
-        <div id="child2" *ngxAccess="'$.Child2'"> Child 2 </div>
-        <div id="child3" *ngxAccess="'$.Child3'"> Child 3 </div>
+        <div id="child1" *ngxAccess="'.Child1'"> Child 1 </div>
+        <div id="child2" *ngxAccess="'.Child2'"> Child 2 </div>
+        <div id="child3" *ngxAccess="'.Child3'"> Child 3 </div>
       </div>
     `
     );

@@ -35,19 +35,15 @@ export class AccessDirective implements OnInit {
     if (this.template) {
       let ngxAccess = this.ngxAccess;
       if (this.parentAccessDirective && !Array.isArray(this.ngxAccess)) {
-        const { path, action } = parse(
-          this.parentAccessDirective.ngxAccess as string
-        );
+        const { path, action } = parse(this.parentAccessDirective.ngxAccess);
         if (this.ngxAccess) {
           if (Array.isArray(this.ngxAccess)) {
-            ngxAccess = `${this.ngxAccess.map((access) =>
-              access.replace('$', path)
+            ngxAccess = `${this.ngxAccess.map(
+              (access) => path + access
             )}:${action}`;
           } else {
-            const { path: childPath, action: childAction } = parse(
-              ngxAccess as string
-            );
-            ngxAccess = `${childPath.replace('$', path)}:${
+            const { path: childPath, action: childAction } = parse(ngxAccess);
+            ngxAccess = `${path}${childPath}:${
               childAction ? childAction : action
             }`;
           }

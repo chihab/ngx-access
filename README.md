@@ -338,7 +338,7 @@ export function loadServerConfiguration(
 export class AppModule {}
 ```
 
-### Logical Expressions (WIP 🚧)
+### Logical Expressions
 
 You can use logical expression on your access paths
 
@@ -346,7 +346,7 @@ You can use logical expression on your access paths
 <app-user *ngxAccess="'User:Update' | 'User:Read'"></app-user>
 ```
 
-### Container Component (WIP 🚧)
+### Container Component
 
 Rather than repeating the same access path in sibling elements we can define the path access in the parent element/component
 
