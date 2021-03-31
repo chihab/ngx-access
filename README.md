@@ -1,16 +1,12 @@
 <div align="center">
   <h2>🔑 ngx-access 🔑</h2>
-    <br />
+  <br />
 
 [![Npm version](https://badge.fury.io/js/ngx-access.svg)](https://npmjs.org/package/ngx-access)
-[![Build Status](https://travis-ci.org/chihab/ngx-access.svg?branch=master)](https://travis-ci.org/chihab/ngx-access)
 [![MIT](https://img.shields.io/packagist/l/doctrine/orm.svg?style=flat-square)]()
 [![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)]()
-[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
-Add access control to your components.
-
-ngx-access is an access control library for Angular, specifically designed to be extended and customized.
+ngx-access is an non-opnionated access control library for Angular.
 
 </div>
 
@@ -18,9 +14,9 @@ ngx-access is an access control library for Angular, specifically designed to be
 
 - ✅ No more endless "ngIf statements" in your components
 - ✅ Define your access control as logical expressions
-- ✅ Centralize your access control configuration
+- ✅ Usage in template and code
 - ✅ Display parent only if one of the children is displayed
-- ✅ Document your application access control policy
+- ✅ Load your access control configuration from a file or from your server
 - ✅ Provide your custom reactive strategy to verify if the user has a given access
 - ✅ Compatible and tested against all Angular versions since v2 (WIP 🚧)
 
@@ -93,25 +89,23 @@ There are predefined strategies provided for some common use cases though. (WIP 
 npm install --save ngx-access
 ```
 
-## Compatibility - (WIP 🚧)
+## Compatibility
 
-ngx-access version 2.x has verified compatibility with the following Angular versions.
+ngx-access version 1.4 and above has verified compatibility with the following Angular versions.
 
 | Angular version | ngx-access 2.x support |
 | --------------- | ---------------------- |
 | 11.x            | ✅                     |
 | 10.x            | ✅                     |
-| 9.x             | ✅                     |
-| 8.x             | ✅                     |
-| 7.x             | ✅                     |
-| 6.x             | ✅                     |
-| 5.x             | ✅                     |
-| 4.x             | ✅                     |
-| 2.x             | ✅                     |
+| 9.x             | 🚧                     |
+| 8.x             | 🚧                     |
+| 7.x             | 🚧                     |
+| 6.x             | 🚧                     |
+| 5.x             | 🚧                     |
+| 4.x             | 🚧                     |
+| 2.x             | 🚧                     |
 
 If the version you are using is not listed, please [raise an issue in our GitHub repository](https://github.com/chihab/ngx-access/issues/new).
-
-</br>
 
 # Access strategy
 
@@ -308,31 +302,58 @@ export class AppComponent {
 }
 ```
 
-#### Server access configuration
+### Logical Expressions
+
+You can use logical expression on your access paths
+
+```html
+<app-user *ngxAccess="'User:Update' | 'User:Read'"></app-user>
+```
+
+### Container Component
+
+Rather than repeating the same access path in sibling elements we can define the path access in the parent element/component
+
+```html
+<div ngxAccess="User.Form:Update">
+  <input *ngxAccess="'.Email'" [(ngModel)]="user.email"></span>
+  <input *ngxAccess="'.Password'" [(ngModel)]="user.password"></span>
+  <app-address *ngxAccess="'.Address'" [(ngModel)]="user.address"></app-address>
+</div>
+<!-- is equivalent to -->
+<div>
+  <input *ngxAccess="'User.Form.Email:Update'" [(ngModel)]="user.email"></span>
+  <input *ngxAccess="'User.Form.Password:Update'" [(ngModel)]="user.password"></span>
+  <app-address *ngxAccess="'User.Form.Address:Update'" [(ngModel)]="user.address"></app-address>
+</div>
+
+```
+
+`.Email` above is prefixed by `User.Form`. `Update` is appended to the resulting string.
+
+### Server access configuration
+
+You can get the access configuration from your server at startup
 
 ```ts
 import { APP_INITIALIZER } from "@angular/core";
-
-export function loadServerConfiguration(
-  accessService: AccessService,
-  http: HttpClient
-) {
-  this.http.get<AccessModuleConfiguration>("/configuration").pipe(
-    tap((configuration) => accessService.setConfiguration(configuration)),
-    catchError((e) => accessService.setConfiguration({}))
-  );
-}
 
 export function loadServerConf(
   accessService: AccessService,
   http: HttpClient
 ): () => Promise<void> {
   return () => {
-    const serverConf$ = this.http
-      .get<AccessModuleConfiguration>("/configuration")
+    // You can have a specific endpoint to load the access configuration specific to the user
+    const apiConf$ = this.http
+      .get<AccessModuleConfiguration>("/api/me/access")
       .pipe(catchError((_) => of({})));
 
-    return serverConf$
+    // You can load the configuration as a static asset
+    const staticConf$ = this.http
+      .get<AccessModuleConfiguration>("/assets/access.json")
+      .pipe(catchError((_) => of({})));
+
+    return serverConf$ // or staticConf$
       .toPromise()
       .then((configuration: AccessConfiguration) => {
         accessService.setConfiguration(configuration);
@@ -353,37 +374,10 @@ export function loadServerConf(
 export class AppModule {}
 ```
 
-### Logical Expressions
-
-You can use logical expression on your access paths
-
-```html
-<app-user *ngxAccess="'User:Update' | 'User:Read'"></app-user>
-```
-
-### Container Component
-
-Rather than repeating the same access path in sibling elements we can define the path access in the parent element/component
-
-```html
-<div>
-  <input *ngxAccess="'User.Email:Update'" [(ngModel)]="user.email"></span>
-  <input *ngxAccess="'User.Password:Update'" [(ngModel)]="user.password"></span>
-  <app-address *ngxAccess="'User.Address:Update'" [(ngModel)]="user.address"></app-address>
-</div>
-<!-- is equivalent to -->
-<div ngxAccess="User:Update">
-  <input *ngxAccess="'.Email'" [(ngModel)]="user.email"></span>
-  <input *ngxAccess="'.Password'" [(ngModel)]="user.password"></span>
-  <app-address *ngxAccess="'.Address'" [(ngModel)]="user.address"></app-address>
-</div>
-```
-
-`.Email` is above prefixed by `User`.
-
-`Update` is appended to the resulting string.
-
 ### External access configuration
+
+You can import the import the access configuration as JSON.
+Note that the configuration will be part of your application bundle.
 
 #### 1. Enable JSON imports in tsconfig.json
 
@@ -459,25 +453,40 @@ export class MainComponent {
 
 ## Route guard
 
+You can use AccessGuard as a guard deciding if a route can be activated / loaded depending on the experssion/path you provide.
+
+```ts
+  {
+    path: "admin",
+    component: AdminComponent,
+    canActivate: [AccessGuard],
+    data: {
+      access: "ADMIN", // access: "Home.Admin:Read"
+      redirectTo: "/unauthorized",
+      // if no 'ADMIN' access, guard refirects to '/forbidden' defined at module level
+    },
+  },
+```
+
+Full example
+
 ```ts
 import { AccessGuard, AccessModule, AccessStrategy } from "ngx-access";
 
 @NgModule({
   imports: [
     AccessModule.forRoot({
-      redirectTo: "/forbidden",
+      redirectTo: "/forbidden", // Default path redirected to from Guard when the access is revoked
     }),
     RouterModule.forRoot([
-      { path: "forbidden", component: UnauthorizedComponent },
-      { path: "not-found", component: NotFoundComponent },
       {
         path: "profile",
         component: ProfileComponent,
         canActivate: [AccessGuard],
         data: {
           access: "ADMIN",
+          // if no 'ADMIN' access, guard refirects to '/forbidden' defined at module level
         },
-        // if no 'ADMIN' access, guard refirects to '/forbidden' defined at module level
       },
       {
         path: "salaries",
@@ -486,10 +495,12 @@ import { AccessGuard, AccessModule, AccessStrategy } from "ngx-access";
         canLoad: [AccessGuard],
         data: {
           access: "ADMIN | RH",
+          // if no 'ADMIN' or 'RH' access, guard refirects to '/not-found'
+          redirectTo: "/not-found",
         },
-        // if no 'ADMIN' or 'RH' access, guard refirects to '/not-found'
-        redirectTo: "/not-found",
       },
+      { path: "forbidden", component: UnauthorizedComponent },
+      { path: "not-found", component: NotFoundComponent },
     ]),
   ],
   providers: [{ provide: AccessStrategy, useClass: MyAccessStrategy }],
