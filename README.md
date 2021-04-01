@@ -93,17 +93,17 @@ npm install --save ngx-access
 
 ngx-access version 1.4 and above has verified compatibility with the following Angular versions.
 
-| Angular version | ngx-access 2.x support |
-| --------------- | ---------------------- |
-| 11.x            | ✅                     |
-| 10.x            | ✅                     |
-| 9.x             | 🚧                     |
-| 8.x             | 🚧                     |
-| 7.x             | 🚧                     |
-| 6.x             | 🚧                     |
-| 5.x             | 🚧                     |
-| 4.x             | 🚧                     |
-| 2.x             | 🚧                     |
+| Angular version | ngx-access version |
+| --------------- | ------------------ |
+| 11.x            | ✅                 |
+| 10.x            | ✅                 |
+| 9.x             | 🚧                 |
+| 8.x             | 🚧                 |
+| 7.x             | 🚧                 |
+| 6.x             | 🚧                 |
+| 5.x             | 🚧                 |
+| 4.x             | 🚧                 |
+| 2.x             | 🚧                 |
 
 If the version you are using is not listed, please [raise an issue in our GitHub repository](https://github.com/chihab/ngx-access/issues/new).
 
@@ -198,10 +198,10 @@ The `form` (including `h1`) will be displayed only if the user has one of the ac
 
 We can define access controls on an element/component using external access configuration.
 
-This is useful when we want to maintain the access control outside the application:
+This is useful when we want to maintain the access control configuration outside the application bundle:
 
-- in a static [external file](#external-access-configuration)
-- dynamically from [server](#server-access-configuration)
+- dynamically loaded from [server](#server-access-configuration)
+- statically imported from a json file [external file](#external-access-configuration)
 
 ```json
 {
@@ -429,7 +429,9 @@ export class AppModule {}
 
 # Usage in code
 
-## Component
+## AccessService
+
+You can use AccessService to check if a user is granted an access.
 
 ```ts
 import { Component, OnInit } from "@angular/core";
@@ -451,7 +453,7 @@ export class MainComponent {
 }
 ```
 
-## Route guard
+## AccessGuard
 
 You can use AccessGuard as a guard deciding if a route can be activated / loaded depending on the experssion/path you provide.
 
@@ -463,7 +465,7 @@ You can use AccessGuard as a guard deciding if a route can be activated / loaded
     data: {
       access: "ADMIN", // access: "Home.Admin:Read"
       redirectTo: "/unauthorized",
-      // if no 'ADMIN' access, guard refirects to '/forbidden' defined at module level
+      // if no 'ADMIN' access, guard refirects to '/unauthorized'
     },
   },
 ```
