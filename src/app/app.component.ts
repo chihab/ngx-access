@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AccessService, AccessStrategy } from 'projects/core/src/public-api';
+import { AccessService, AccessStrategy } from 'ngx-access';
 
 @Component({
   selector: 'app-root',
