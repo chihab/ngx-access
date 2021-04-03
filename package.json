@@ -8,7 +8,8 @@
     "build": "ng build --prod core",
     "test": "ng test core --watch=false --browsers=ChromeHeadless",
     "test:watch": "ng test core --browsers=ChromeHeadless",
-    "build:demo": "ng build --prod ngx-access"
+    "build:demo": "ng build --prod ngx-access",
+    "versem": "node ../versem/packages/cli/dist/index.js apply -t 8.0.x"
   },
   "private": true,
   "dependencies": {
