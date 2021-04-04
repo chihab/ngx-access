@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: "12.x"
       - name: Use Angular v8.1.x
-        uses: chihab/semver@v1
+        uses: chihab/versem@v1
         with:
           project: angular
           version: 8.1.x
