@@ -11,9 +11,7 @@ import { tap } from 'rxjs/operators';
 import { AccessService } from './access.service';
 import { AccessServiceConfig, ACCESS_CONFIG } from '../config';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class AccessGuard implements CanActivate, CanLoad {
   constructor(
     private router: Router,

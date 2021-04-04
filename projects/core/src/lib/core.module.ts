@@ -1,6 +1,8 @@
 import { ModuleWithProviders, NgModule } from '@angular/core';
 import { AccessServiceConfig, ACCESS_CONFIG } from './config';
 import { AccessDirective } from './directives/access.directive';
+import { AccessGuard } from './services/access.guard';
+import { AccessService } from './services/access.service';
 
 @NgModule({
   declarations: [AccessDirective],
@@ -13,6 +15,8 @@ export class AccessModule {
     return {
       ngModule: AccessModule,
       providers: [
+        AccessService,
+        AccessGuard,
         {
           provide: ACCESS_CONFIG,
           useValue: {
