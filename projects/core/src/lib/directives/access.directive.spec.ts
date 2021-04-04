@@ -2,7 +2,7 @@ import { Observable, of } from 'rxjs';
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { AccessModule } from '../../public-api';
+import { AccessModule } from '../core.module';
 import { AccessStrategy } from '../services/access-strategy.service';
 
 @Component({

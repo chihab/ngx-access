@@ -6,11 +6,11 @@ import {
   AccessConfiguration,
   AccessGuard,
   AccessModule,
+  AccessService,
   AccessStrategy,
 } from 'ngx-access';
-import { AccessService } from 'projects/core/src/public-api';
 import { of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { AppComponent } from './app.component';
 import { MainComponent } from './main/main.component';
 import { MyAccessStrategy } from './my-access-strategy.service';

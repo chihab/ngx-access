@@ -8,15 +8,14 @@
     "build": "ng build --prod core",
     "test": "ng test core --watch=false --browsers=ChromeHeadless",
     "test:watch": "ng test core --browsers=ChromeHeadless",
-    "build:demo": "ng build --prod ngx-access"
+    "build:demo": "ng build --prod ngx-access",
+    "versem": "node ../versem/packages/cli/dist/index.js apply -t 8.0.x"
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "~11.2.7",
     "@angular/common": "~11.2.7",
     "@angular/compiler": "~11.2.7",
     "@angular/core": "~11.2.7",
-    "@angular/forms": "~11.2.7",
     "@angular/platform-browser": "~11.2.7",
     "@angular/platform-browser-dynamic": "~11.2.7",
     "@angular/router": "~11.2.7",
