@@ -1,13 +1,29 @@
-<ul>
-  <div
-    *ngxAccess="
-      '( UserForm.FirstName : Write | UserForm.FirstName : Update) | UserForm.FirstName : Read';
-      else unauthorized
-    "
-  >
-    Hello World
-  </div>
-  <div *ngxAccess="'CanReadFirstName'; else unauthorized">Hello World Expr</div>
+<div *ngxAccess>
+  <h1>Parent</h1>
+  <ul>
+    <li *ngxAccess="':UserForm.Read'">UserForm.Read</li>
+    <!-- <li
+      *ngxAccess="
+        ':( UserForm.FirstName.Write | UserForm.FirstName.Update) | UserForm.FirstName.Read'
+      "
+    >
+      ( UserForm.FirstName.Write | UserForm.FirstName.Update) &
+      UserForm.FirstName.Read
+    </li> -->
+    <li *ngxAccess="'CanReadFirstName'">CanReadFirstName</li>
+    <li *ngxAccess="'CanReadFirstName'">CanReadFirstName</li>
+    <li *ngxAccess="'CanReadFirstName'">CanReadFirstName</li>
+    <li *ngxAccess="'CanReadFirstNames'">CanReadFirstName</li>
+    <li *ngxAccess="'CanReadFirstNames'">CanReadFirstName</li>
+    <li *ngxAccess="'CanReadFirstNames'">CanReadFirstName</li>
+    <li *ngxAccess="'CanReadFirstNames'">CanReadFirstName</li>
+    <li *ngxAccess="'CanReadFirstNames'">CanReadFirstName</li>
+    <li *ngxAccess="'CanReadFirstNames'">CanReadFirstName</li>
+    <li *ngxAccess="'CanReadFirstNames'">CanReadFirstName</li>
+    <li *ngxAccess="'CanReadFirstNames'">CanReadFirstName</li>
+    <li *ngxAccess="'CanReadFirstNames'">CanReadFirstName</li>
+    <li *ngxAccess="'CanReadFirstNames'">CanReadFirstName</li>
 
-  <ng-template #unauthorized> Unauthorized Access </ng-template>
-</ul>
+    <ng-template #unauthorized> Unauthorized Access </ng-template>
+  </ul>
+</div>

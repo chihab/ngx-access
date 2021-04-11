@@ -21,14 +21,6 @@ export function setHasAccessStrategy(accessTest: HasAccessStrategy) {
   hasAccessStrategy = accessTest;
 }
 
-export function parse(expression: string): { path: string; action: string } {
-  const arr = expression.replace(/\s/g, '').split(':');
-  return {
-    path: arr[0] || '',
-    action: arr[1] || '',
-  };
-}
-
 export function canAccessExpression(accessExpression: string) {
   return of(accessExpression).pipe(
     map((ae) => ae.replace(/\s/g, '')),

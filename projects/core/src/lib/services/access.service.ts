@@ -29,8 +29,8 @@ export class AccessService {
   }
 
   can(access: string): Observable<boolean> {
-    return access.includes(':')
-      ? canAccessPaths(access)
+    return access.startsWith(':')
+      ? canAccessPaths(access.substring(1))
       : canAccessExpression(access);
   }
 }

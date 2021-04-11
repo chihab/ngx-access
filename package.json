@@ -4,9 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:lib": "ng serve core",
     "lint": "ng lint core",
     "build": "ng build --prod core",
     "test": "ng test core --watch=false --browsers=ChromeHeadless",
+    "test:coverage": "ng test core  --no-watch --code-coverage --browsers=ChromeHeadless",
     "test:watch": "ng test core --browsers=ChromeHeadless",
     "build:demo": "ng build --prod ngx-access"
   },
