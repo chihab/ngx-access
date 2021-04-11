@@ -179,6 +179,10 @@ If user has `CanUpdateAll` access, `CanUpdateUser` and `CanUpdateUserEmail` acce
 
 ## Parent access control
 
+By putting `*ngxAccess` in an view, its display will depend on the display of its childre (no limit on depth). If one child is display, meaning that the child has a given access or has an else statement, the parent will also be displayed.
+
+Below, the `form` (including `h1`) will be displayed only if the user has one of the access in the input elements beneath.
+
 ```html
 <form *ngxAccess>
   <h1>Update User Form</h1>
@@ -189,7 +193,7 @@ If user has `CanUpdateAll` access, `CanUpdateUser` and `CanUpdateUserEmail` acce
 </form>
 ```
 
-The `form` (including `h1`) will be displayed only if the user has one of the access in the inputs beneath.
+
 
 ## Logical Expression
 
@@ -218,8 +222,8 @@ export class MainComponent {
   constructor(private accessService: AccessService) {}
 
   submit() {
-    if (this.accessService.check("ADMIN | RH")) {
-      // Send ADMIN | RH specific Payload to backend
+    if (this.accessService.check("ADMIN | HR")) {
+      // Send ADMIN | HRspecific Payload to backend
     }
   }
 }
@@ -235,7 +239,7 @@ You can use AccessGuard as a guard deciding if a route can be activated / loaded
     component: AdminComponent,
     canActivate: [AccessGuard],
     data: {
-      access: "ADMIN", // access: "Home.Admin:Read"
+      access: "ADMIN", // or access configuration ":Home.Admin.Read"
       redirectTo: "/unauthorized",
       // if no 'ADMIN' access, guard refirects to '/unauthorized'
     },
@@ -268,8 +272,8 @@ import { AccessGuard, AccessModule, AccessStrategy } from "ngx-access";
           import("./salaries/salaries.module").then((m) => m.SalariesModule),
         canLoad: [AccessGuard],
         data: {
-          access: "ADMIN | RH",
-          // if no 'ADMIN' or 'RH' access, guard refirects to '/not-found'
+          access: "ADMIN | HR",
+          // if no 'ADMIN' or 'HR' access, guard refirects to '/not-found'
           redirectTo: "/not-found",
         },
       },
@@ -460,7 +464,7 @@ Note that the configuration will be part of your application bundle.
 }
 ```
 
-## 2. Create access.json file
+### 2. Create access.json file
 
 ```json
 {
