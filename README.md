@@ -6,7 +6,7 @@
 [![MIT](https://img.shields.io/packagist/l/doctrine/orm.svg?style=flat-square)]()
 [![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)]()
 
-ngx-access is an non-opnionated access control library for Angular.
+ngx-access is a non-opnionated access control library for Angular.
 
 </div>
 
@@ -287,7 +287,7 @@ export class AppModule {}
 We can define access controls using external access configuration. This is useful when we want to maintain the access:
 
 - on the [server](#server-access-configuration)
-- in a json file [external file](#external-access-configuration)
+- in an [external file](#external-access-configuration)
 
 First we setup the Access Control configuration by mapping unique IDs with the Access Control Logical Expression to evaluate.
 
@@ -341,10 +341,10 @@ which can be used in the template like this:
 <input *ngxAccess="':User.Form.Email.Read'" />
 <input type="password" *ngxAccess="':User.Form.Password'" />
 
-<app-user-form \*ngxAccess="'User.Form.Update'"></app-user-form>
+<app-user-form *ngxAccess="'User.Form.Update'"></app-user-form>
 <!-- is equivalent to -->
 <app-user-form
-  \*ngxAccess="'(CanReadUserEmail & CanUpdateUserEmail) | CanUpdateUserAddress'"
+  *ngxAccess="'(CanReadUserEmail & CanUpdateUserEmail) | CanUpdateUserAddress'"
 ></app-user-form>
 ```
 
