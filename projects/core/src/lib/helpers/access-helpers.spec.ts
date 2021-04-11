@@ -30,7 +30,7 @@ describe('AccessHelpers', () => {
   });
 
   it('should prevent access when no access configuration has been set', (done: DoneFn) => {
-    canAccessPaths('Resource:View').subscribe((value) => {
+    canAccessPaths('Resource.View').subscribe((value) => {
       expect(value).toBe(false);
       done();
     });
@@ -38,7 +38,7 @@ describe('AccessHelpers', () => {
 
   it('should prevent access when access configuration has been initialized with empty object', (done: DoneFn) => {
     setConfigurationAccess({});
-    canAccessPaths('Resource:View').subscribe((value) => {
+    canAccessPaths('Resource.View').subscribe((value) => {
       expect(value).toBe(false);
       done();
     });
@@ -51,7 +51,7 @@ describe('AccessHelpers', () => {
         create: ['UnknownAccess'],
       },
     });
-    canAccessPaths('Unknown:create').subscribe(() => {
+    canAccessPaths('Unknown.create').subscribe(() => {
       expect(hasAccessStrategy).not.toHaveBeenCalled();
       done();
     });
@@ -63,14 +63,14 @@ describe('AccessHelpers', () => {
         SubResource1: {
           Update: ['UpdateAccess'],
           Create: ['CreateAccess'],
-          Read: ['ReadAccess1', 'ReadAccess2'],
+          Read: 'ReadAccess1 | ReadAccess2',
         },
         SubResource2: {
           Read: [['Access1', 'Access2'], ['Access3 AND Access4'], 'Access5'],
         },
       },
     });
-    canAccessPaths('Resource.SubResource1:Read').subscribe((_) => {
+    canAccessPaths('Resource.SubResource1.Read').subscribe((_) => {
       expect(hasAccessStrategy).toHaveBeenCalledWith('ReadAccess1');
       expect(hasAccessStrategy).toHaveBeenCalledWith('ReadAccess2');
       done();
@@ -86,7 +86,7 @@ describe('AccessHelpers', () => {
         complex: [['Access1', 'Access2'], 'Access5'],
       },
     });
-    canAccessPaths('Resource:create').subscribe((_) => {
+    canAccessPaths('Resource.create').subscribe((_) => {
       expect(hasAccessStrategy).toHaveBeenCalledWith('CreateAccess');
       done();
     });
@@ -101,7 +101,7 @@ describe('AccessHelpers', () => {
         complex: [['Access1', 'Access2'], 'Access5'],
       },
     });
-    canAccessPaths('Resource:array').subscribe((_) => {
+    canAccessPaths('Resource.array').subscribe((_) => {
       expect(hasAccessStrategy).not.toHaveBeenCalledWith('OtherAccess');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access1');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access2');
@@ -118,7 +118,7 @@ describe('AccessHelpers', () => {
         complex: [['Access1', 'Access2'], 'Access5'],
       },
     });
-    canAccessPaths('Resource:complex').subscribe((_) => {
+    canAccessPaths('Resource.complex').subscribe((_) => {
       expect(hasAccessStrategy).not.toHaveBeenCalledWith('OtherAccess');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access1');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Access2');
@@ -160,7 +160,7 @@ describe('AccessHelpers', () => {
       },
     });
     hasAccessStrategy.and.returnValue(of(false)); // In order to check out all children access
-    canAccessPaths('View:Read').subscribe((value) => {
+    canAccessPaths('View.Read').subscribe((value) => {
       expect(value).toBe(false);
       expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource1Access');
       expect(hasAccessStrategy).toHaveBeenCalledWith('ReadResource2Access');
@@ -187,7 +187,7 @@ describe('AccessHelpers', () => {
       const userAccess = ['ReadResource2', 'Read3'];
       return of(userAccess.findIndex((a) => a === access) !== -1);
     });
-    canAccessPaths('View:Read').subscribe((value) => {
+    canAccessPaths('View.Read').subscribe((value) => {
       expect(value).toBe(true);
       expect(hasAccessStrategy).toHaveBeenCalledWith('Read3');
       done();
@@ -206,7 +206,7 @@ describe('AccessHelpers', () => {
       const userAccess = ['Visitor'];
       return of(userAccess.findIndex((a) => a === access) !== -1);
     });
-    canAccessPaths('View:Read').subscribe((value) => {
+    canAccessPaths('View.Read').subscribe((value) => {
       expect(value).toBe(false);
       expect(hasAccessStrategy).toHaveBeenCalledWith('Visitor');
       done();
@@ -225,7 +225,7 @@ describe('AccessHelpers', () => {
       const userAccess = ['ReadResource2', 'Read3'];
       return of(userAccess.findIndex((a) => a === access) !== -1);
     });
-    canAccessPaths('View:Read').subscribe((value) => {
+    canAccessPaths('View.Read').subscribe((value) => {
       expect(value).toBe(false);
       expect(hasAccessStrategy).toHaveBeenCalledWith('Read1');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Read2');
@@ -248,7 +248,7 @@ describe('AccessHelpers', () => {
       const userAccess = ['ReadResource2', 'Read3'];
       return of(userAccess.findIndex((a) => a === access) !== -1);
     });
-    canAccessPaths('View:Read').subscribe((value) => {
+    canAccessPaths('View.Read').subscribe((value) => {
       expect(value).toBe(true);
       expect(hasAccessStrategy).toHaveBeenCalledWith('Read1');
       expect(hasAccessStrategy).toHaveBeenCalledWith('Read2');
@@ -266,7 +266,7 @@ describe('AccessHelpers', () => {
         },
       },
     });
-    canAccessPaths('View.Resource1:Read').subscribe((value) => {
+    canAccessPaths('View.Resource1.Read').subscribe((value) => {
       expect(value).toBe(false);
       expect(hasAccessStrategy).toHaveBeenCalledWith('CanRead');
       expect(hasAccessStrategy).not.toHaveBeenCalledWith('CanWrite');

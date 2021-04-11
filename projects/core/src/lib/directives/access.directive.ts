@@ -101,10 +101,13 @@ export class AccessDirective implements OnInit {
   check(access: string) {
     this.access$ = this.accessService
       .can(access)
-      .pipe(takeUntil(this.onDestroy$), delay(0));
+      .pipe(takeUntil(this.onDestroy$));
     if (this.parentAccessDirective) {
       this.parentAccessDirective.observe(
-        this.access$.pipe(map((access) => access || !!this.ngxAccessElse))
+        this.access$.pipe(
+          map((access) => access || !!this.ngxAccessElse),
+          delay(0)
+        )
       );
     }
     this.access$.subscribe((access) => {
