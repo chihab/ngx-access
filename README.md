@@ -18,7 +18,7 @@ ngx-access is an non-opnionated access control library for Angular.
 - ✅ Display parent only if one of the children is displayed
 - ✅ Load your access control configuration from a file or from your server
 - ✅ Provide your custom reactive strategy to verify if the user has a given access
-- ✅ Compatible and tested against all Angular versions since v2 (WIP 🚧)
+- ✅ Compatible and tested against mainstream Angular versions
 
 # Table of Contents
 
@@ -27,7 +27,7 @@ ngx-access is an non-opnionated access control library for Angular.
 - [Access Strategy](#access-strategy)
 - [Usage in Template](#usage-in-template)
 - [Usage in Code](#usage-in-code)
-- [Contributors](#contributors)
+- [Access Control Configuration](#configuration-based-access-control)
 - [Credits](#credits)
 
 # In a Nutshell
@@ -56,7 +56,7 @@ The `app-salaries` component is displayed only if the user has `ADMIN` **OR** `H
 
 ## Define your Access strategy
 
-The `ADMIN` and `RH` access are evaluated using your custom strategy
+The `ADMIN` and `HR` access are evaluated using your custom strategy
 
 ```ts
 import { AccessStrategy } from "ngx-access";
@@ -177,7 +177,7 @@ The `input` element is displayed only if the user has `CanUpdateAll` access **OR
 
 If user has `CanUpdateAll` access, `CanUpdateUser` and `CanUpdateUserEmail` access **will not be** evaluated.
 
-## Parent access control - (WIP 🚧)
+## Parent access control
 
 ```html
 <form *ngxAccess>
@@ -191,238 +191,13 @@ If user has `CanUpdateAll` access, `CanUpdateUser` and `CanUpdateUserEmail` acce
 
 The `form` (including `h1`) will be displayed only if the user has one of the access in the inputs beneath.
 
-## Dynamic access control
+## Logical Expression
 
-We can define access controls on an element/component using external access configuration.
-
-This is useful when we want to maintain the access control configuration outside the application bundle:
-
-- dynamically loaded from [server](#server-access-configuration)
-- statically imported from a json file [external file](#external-access-configuration)
-
-```json
-{
-  "User": {
-    "Form": {
-      "Email": {
-        "Read": "CanReadUserEmail",
-        "Update": "CanUpdateUserEmail"
-      },
-      "Password": {
-        "Update": "CanUpdateUserPassword"
-      },
-      "Address": {
-        "Read": "CanReadUserAddress",
-        "Update": "CanUpdateUserAddress"
-      }
-    }
-  }
-}
-```
-
-In the template we provide the Access Control path
-
-```html
-<input *ngxAccess="'User.Form.Password:Update'" />
-<!-- is equivalent to -->
-<input *ngxAccess="'CanUpdateUserPassword'" />
-
-<app-user-form *ngxAccess="'User.Form:Update'"></app-user-form>
-<!-- is equivalent to -->
-<app-user-form
-  *ngxAccess="'CanUpdateUserEmail | CanUpdateUserPassword | CanUpdateUserAddress'"
-></app-user-form>
-```
-
-`app-user-form` component is displayed only if the user has at least one of the `Update` access defined beneath the `User.Form` access path, namely: `CanUpdateUserEmail` or `CanUpdateUserPassword` or `CanUpdateUserAddress` access.
-
-### Configuration
-
-```ts
-import { AccessModule, AccessConfiguration } from "ngx-access";
-
-// Usually we will
-// - define in a configuration file: access.json  [See below]
-// - get the configuration from the server [See below]
-export const ACCESS_CONFIGURATION: AccessConfiguration = {
-  User: {
-    Form: {
-      Email: {
-        Read: "CanReadUserEmail",
-        Update: "CanUpdateUserEmail",
-      },
-      Password: {
-        Update: "CanUpdateUserPassword",
-      },
-      Address: {
-        Read: "CanReadUserAddress",
-        Update: "CanUpdateUserAddress",
-      },
-    },
-  },
-};
-```
-
-The access configuration can be set either at module level
-
-```ts
-import { ACCESS_CONFIGURATION } from "./access.ts";
-
-@NgModule({
-  imports: [
-    AccessModule.forRoot({
-      access: ACCESS_CONFIGURATION,
-    }),
-  ],
-  providers: [{ provide: AccessStrategy, useClass: RoleAccessStrategy }],
-})
-export class AppModule {}
-```
-
-Or at service level
-
-```ts
-import { ACCESS_CONFIGURATION } from "./access.ts";
-
-import { Component } from "@angular/core";
-
-@Component({
-  selector: "app-root",
-  templateUrl: "./app.component.html",
-  styleUrls: ["./app.component.css"],
-})
-export class AppComponent {
-  constructor(private accessService: AccessService) {}
-  ngOnInit() {
-    this.accessService.setConfiguration(ACCESS_CONFIGURATION);
-  }
-}
-```
-
-### Logical Expressions
-
-You can use logical expression on your access paths
-
-```html
-<app-user *ngxAccess="'User:Update' | 'User:Read'"></app-user>
-```
-
-### Container Component
-
-Rather than repeating the same access path in sibling elements we can define the path access in the parent element/component
-
-```html
-<div ngxAccess="User.Form:Update">
-  <input *ngxAccess="'.Email'" [(ngModel)]="user.email"></span>
-  <input *ngxAccess="'.Password'" [(ngModel)]="user.password"></span>
-  <app-address *ngxAccess="'.Address'" [(ngModel)]="user.address"></app-address>
-</div>
-<!-- is equivalent to -->
-<div>
-  <input *ngxAccess="'User.Form.Email:Update'" [(ngModel)]="user.email"></span>
-  <input *ngxAccess="'User.Form.Password:Update'" [(ngModel)]="user.password"></span>
-  <app-address *ngxAccess="'User.Form.Address:Update'" [(ngModel)]="user.address"></app-address>
-</div>
-
-```
-
-`.Email` above is prefixed by `User.Form`. `Update` is appended to the resulting string.
-
-### Server access configuration
-
-You can get the access configuration from your server at startup
-
-```ts
-import { APP_INITIALIZER } from "@angular/core";
-
-export function loadServerConf(
-  accessService: AccessService,
-  http: HttpClient
-): () => Promise<void> {
-  return () => {
-    // You can have a specific endpoint to load the access configuration specific to the user
-    const apiConf$ = this.http
-      .get<AccessModuleConfiguration>("/api/me/access")
-      .pipe(catchError((_) => of({})));
-
-    // You can load the configuration as a static asset
-    const staticConf$ = this.http
-      .get<AccessModuleConfiguration>("/assets/access.json")
-      .pipe(catchError((_) => of({})));
-
-    return serverConf$ // or staticConf$
-      .toPromise()
-      .then((configuration: AccessConfiguration) => {
-        accessService.setConfiguration(configuration);
-      });
-  };
-}
-
-@NgModule({
-  providers: [
-    {
-      provide: APP_INITIALIZER,
-      useFactory: loadServerConf,
-      deps: [AccessService, HttpClient],
-      multi: true,
-    },
-  ],
-})
-export class AppModule {}
-```
-
-### External access configuration
-
-You can import the import the access configuration as JSON.
-Note that the configuration will be part of your application bundle.
-
-#### 1. Enable JSON imports in tsconfig.json
-
-```json
-{
-  "compilerOptions": {
-    "declaration": false,
-    "resolveJsonModule": true,
-    "esModuleInterop": true
-  }
-}
-```
-
-#### 2. Create access.json file
-
-```json
-{
-  "User": {
-    "Form": {
-      "Email": {
-        "Read": "CanReadUserEmail",
-        "Update": "CanUpdateUserEmail"
-      },
-      "Password": {
-        "Update": "CanUpdateUserPassword"
-      },
-      "Address": {
-        "Update": "CanUpdateUserAddress"
-      }
-    }
-  }
-}
-```
-
-#### 3. Import access.json file
-
-```ts
-import access from "./src/assets/access.json";
-
-@NgModule({
-  imports: [
-    AccessModule.forRoot({
-      access,
-    }),
-  ],
-})
-export class AppModule {}
-```
+| Type | Description                      | Evaluation                                                |
+| ---- | -------------------------------- | --------------------------------------------------------- |
+| &    | `Access1 & Access2`              | true if user has Access1 **AND** Access2.                 |
+| \|   | `Access1 \| Access2`             | true if user has Access1 **OR** Access2                   |
+| &/\| | `Access1 & (Access2 \| Access3)` | true if user has Access1 **AND** (Access2 **OR** Access3) |
 
 # Usage in code
 
@@ -507,13 +282,205 @@ import { AccessGuard, AccessModule, AccessStrategy } from "ngx-access";
 export class AppModule {}
 ```
 
-## Logical Expression
+# Configuration Based Access Control
 
-| Type | Description                      | Evaluation                                                |
-| ---- | -------------------------------- | --------------------------------------------------------- |
-| &    | `Access1 & Access2`              | true if user has Access1 **AND** Access2.                 |
-| \|   | `Access1 \| Access2`             | true if user has Access1 **OR** Access2                   |
-| &/\| | `Access1 & (Access2 \| Access3)` | true if user has Access1 **AND** (Access2 **OR** Access3) |
+We can define access controls using external access configuration. This is useful when we want to maintain the access:
+
+- on the [server](#server-access-configuration)
+- in a json file [external file](#external-access-configuration)
+
+First we setup the Access Control configuration by mapping unique IDs with the Access Control Logical Expression to evaluate.
+
+```json
+{
+  "UserForm": "CanReadUser | CanUpdateUser",
+  "UserMenu": "CanListUsers"
+}
+```
+
+In the template we provide the Access Control ID
+
+```html
+<input *ngxAccess="':UserForm'" />
+<!-- is equivalent to -->
+<input *ngxAccess="'CanReadUser | CanUpdateUser'" />
+```
+
+## Access Control Configuration
+
+We can use flat configuration that maps IDs with Access Control expressions
+
+```ts
+export const ACCESS_CONFIGURATION: AccessConfiguration = {
+  UserForm: "CanReadUser | CanUpdateUser",
+  UserMenu: "CanListUsers",
+};
+```
+
+Or a Hierarchical configuration for better readbility
+
+```ts
+export const ACCESS_CONFIGURATION: AccessConfiguration = {
+  User: {
+    Form: {
+      Email: {
+        Read: "CanReadUserEmail",
+        Update: "CanReadUserEmail & CanUpdateUserEmail",
+      },
+      Password: {
+        Update: "CanUpdateUserPassword",
+      },
+    },
+  },
+};
+```
+
+which can be used in the template like this:
+
+```html
+<input *ngxAccess="':User.Form.Email.Read'" />
+<input type="password" *ngxAccess="':User.Form.Password'" />
+
+<app-user-form \*ngxAccess="'User.Form.Update'"></app-user-form>
+<!-- is equivalent to -->
+<app-user-form
+  \*ngxAccess="'(CanReadUserEmail & CanUpdateUserEmail) | CanUpdateUserAddress'"
+></app-user-form>
+```
+
+`app-user-form` component is displayed only if the user has at least one of the `Update` access defined beneath the `User.Form` access path, namely: (`CanReadUserEmail` and `CanUpdateUserPassword`) or `CanUpdateUserAddress` access.
+
+### Module Configuration
+
+The access configuration can be set in a module:
+
+```ts
+import { ACCESS_CONFIGURATION } from "./access-configuration";
+
+@NgModule({
+  imports: [
+    AccessModule.forRoot({
+      access: ACCESS_CONFIGURATION,
+    }),
+  ],
+  providers: [{ provide: AccessStrategy, useClass: RoleAccessStrategy }],
+})
+export class AppModule {}
+```
+
+### Service Configuration
+
+The access configuration can be in a service:
+
+```ts
+import { ACCESS_CONFIGURATION } from "./access-configuration";
+
+import { Component } from "@angular/core";
+
+@Component({
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.css"],
+})
+export class AppComponent {
+  constructor(private accessService: AccessService) {}
+  ngOnInit() {
+    this.accessService.setConfiguration(ACCESS_CONFIGURATION);
+  }
+}
+```
+
+## Logical Expressions
+
+You can use logical expression on your access ids
+
+```html
+<app-user *ngxAccess=":('UserForm' | 'UserMenu')"></app-user>
+```
+
+## Server access configuration
+
+You can get the access configuration from your server at startup
+
+```ts
+import { APP_INITIALIZER } from "@angular/core";
+
+export function loadServerConf(
+  accessService: AccessService,
+  http: HttpClient
+): () => Promise<void> {
+  return () => {
+    // You can have a specific endpoint to load the access configuration specific to the user
+    const apiConf$ = this.http
+      .get<AccessModuleConfiguration>("/api/me/access")
+      .pipe(catchError((_) => of({})));
+
+    // You can load the configuration as a static asset
+    const staticConf$ = this.http
+      .get<AccessModuleConfiguration>("/assets/access.json")
+      .pipe(catchError((_) => of({})));
+
+    return serverConf$ // or staticConf$
+      .toPromise()
+      .then((configuration: AccessConfiguration) => {
+        accessService.setConfiguration(configuration);
+      });
+  };
+}
+
+@NgModule({
+  providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: loadServerConf,
+      deps: [AccessService, HttpClient],
+      multi: true,
+    },
+  ],
+})
+export class AppModule {}
+```
+
+## External access configuration
+
+You can import the access configuration as JSON.
+Note that the configuration will be part of your application bundle.
+
+### 1. Enable JSON imports in tsconfig.json
+
+```json
+{
+  "compilerOptions": {
+    "declaration": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  }
+}
+```
+
+## 2. Create access.json file
+
+```json
+{
+  "UserForm": "CanReadUser | CanUpdateUser",
+  "UserMenu": "CanListUsers"
+}
+```
+
+### 3. Import access.json file
+
+```ts
+import access from "./src/assets/access.json";
+
+@NgModule({
+  imports: [
+    AccessModule.forRoot({
+      access,
+    }),
+  ],
+})
+export class AppModule {}
+```
 
 # Credits
 

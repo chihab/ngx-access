@@ -17,28 +17,35 @@ import { MyAccessStrategy } from './my-access-strategy.service';
 import { ProfileComponent } from './profile/profile.component';
 import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
 
+const conf1 = {
+  access: {
+    UserForm: {
+      FirstName: {
+        Read: 'CanReadFirstName',
+      },
+      Login: {
+        Read: 'CanReadLogin',
+      },
+    },
+  },
+  redirectTo: '/forbidden',
+};
+const conf2 = {
+  access: {
+    'UserForm.FirstName.Read': 'CanReadFirstName',
+  },
+  redirectTo: '/forbidden',
+};
+
 export function loadServerConf(
   accessService: AccessService
 ): () => Promise<void> {
   return () => {
-    const serverConf$ = of({
-      access: {
-        UserForm: {
-          FirstName: {
-            Read: 'UserAccess',
-          },
-          Login: {
-            Read: 'Adminccess',
-          },
-        },
-      },
-      redirectTo: '/forbidden',
-    }).pipe(catchError((_) => of({})));
+    const serverConf$ = of(conf2).pipe(catchError((_) => of({})));
 
     return serverConf$
       .toPromise()
       .then((configuration: AccessConfiguration) => {
-        console.log('Setting configuration', configuration);
         accessService.setConfiguration(configuration);
       });
   };
@@ -52,19 +59,7 @@ export function loadServerConf(
     UnauthorizedComponent,
   ],
   imports: [
-    AccessModule.forRoot({
-      access: {
-        UserForm: {
-          FirstName: {
-            Read: 'UserAccess',
-          },
-          Login: {
-            Read: 'Adminccess',
-          },
-        },
-      },
-      redirectTo: '/forbidden',
-    }),
+    AccessModule.forRoot(conf2),
     RouterModule.forRoot([
       { path: '', component: MainComponent },
       { path: 'forbidden', component: UnauthorizedComponent },

@@ -39,12 +39,12 @@ export function flatten(
       if (group) {
         access = access.concat(childrenAccess);
         access.forEach((access) => {
-          setConfig(getPath(path, ':', access.prop), access.action);
+          setConfig(getPath(path, '.', access.prop), access.action);
         });
       }
     } else {
       const expression = parse(value.replace(/\s/g, ''));
-      setConfig(getPath(path, ':', prop), expression);
+      setConfig(getPath(path, '.', prop), expression);
       access = access.concat({ action: expression, prop });
     }
     return access;
