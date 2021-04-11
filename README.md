@@ -340,15 +340,17 @@ which can be used in the template like this:
 ```html
 <input *ngxAccess="':User.Form.Email.Read'" />
 <input type="password" *ngxAccess="':User.Form.Password'" />
+```
 
-<app-user-form *ngxAccess="'User.Form.Update'"></app-user-form>
+`app-user-form` component below is displayed only if the user has at least one of the `Update` access defined beneath the `User.Form` access path, namely: (`CanReadUserEmail` and `CanUpdateUserPassword`) or `CanUpdateUserAddress` access.
+
+```html
+<app-user-form *ngxAccess="':User.Form.Update'"></app-user-form>
 <!-- is equivalent to -->
 <app-user-form
   *ngxAccess="'(CanReadUserEmail & CanUpdateUserEmail) | CanUpdateUserAddress'"
 ></app-user-form>
 ```
-
-`app-user-form` component is displayed only if the user has at least one of the `Update` access defined beneath the `User.Form` access path, namely: (`CanReadUserEmail` and `CanUpdateUserPassword`) or `CanUpdateUserAddress` access.
 
 ### Module Configuration
 
